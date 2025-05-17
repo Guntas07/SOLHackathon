@@ -20,9 +20,8 @@
       --solana-dark-green:  #00C781;
       --solana-grey:        #1a1a1a;
       --solana-light-grey:  #2c2c2c;
-      --card-bg:            #161616;  /* card background */
-      /* LIGHTER page background */
-      --body-bg:            #2f2d2d;
+      --card-bg:            #161616;
+      --body-bg:            #2f2d2d;  /* lighter background */
       --text-primary:       #FFFFFF;
       --text-secondary:     #a0aec0;
     }
@@ -32,72 +31,59 @@
       background-color: var(--body-bg);
       color: var(--text-primary);
     }
-    .bg-card-bg {
-      background-color: var(--card-bg) !important;
-    }
-    .text-text-secondary {
-      color: var(--text-secondary) !important;
-    }
+    .bg-card-bg { background-color: var(--card-bg) !important; }
+    .text-text-secondary { color: var(--text-secondary) !important; }
 
-    /* selection */
     ::selection { background: var(--solana-green); color: var(--body-bg); }
     ::-moz-selection { background: var(--solana-green); color: var(--body-bg); }
 
-    /* tooltip, scrollbar, modal… (unchanged) */
     .tooltip { position: relative; display: inline-block; }
     .tooltip .tooltiptext {
       visibility: hidden; width: 140px;
       background: var(--solana-light-grey); color: var(--text-primary);
       text-align: center; border-radius: 6px; padding: 5px 0;
-      position: absolute; z-index: 10; bottom: 125%; left: 50%;
-      margin-left: -70px; opacity: 0; transition: opacity .3s;
-      font-size: .75rem;
+      position: absolute; z-index:10; bottom:125%; left:50%;
+      margin-left:-70px; opacity:0; transition:opacity .3s; font-size:.75rem;
     }
-    .tooltip:hover .tooltiptext { visibility: visible; opacity: 1; }
-    ::-webkit-scrollbar { width: 8px; }
-    ::-webkit-scrollbar-track { background: var(--solana-grey); }
+    .tooltip:hover .tooltiptext { visibility:visible; opacity:1; }
+
+    ::-webkit-scrollbar { width:8px; }
+    ::-webkit-scrollbar-track { background:var(--solana-grey); }
     ::-webkit-scrollbar-thumb {
-      background: var(--solana-purple); border-radius: 4px;
+      background:var(--solana-purple); border-radius:4px;
     }
-    ::-webkit-scrollbar-thumb:hover { background: var(--solana-dark-purple); }
-    .modal { display: none; position: fixed; z-index:1000;
+    ::-webkit-scrollbar-thumb:hover { background:var(--solana-dark-purple); }
+
+    .modal { display:none; position:fixed; z-index:1000;
       left:0; top:0; width:100%; height:100%; overflow:auto;
       background-color: rgba(0,0,0,0.7);
     }
     .modal-content {
       background-color: var(--card-bg); color: var(--text-primary);
-      margin: 15% auto; padding:25px;
-      border:1px solid var(--solana-light-grey);
-      width:90%; max-width:450px; border-radius:12px;
-      text-align:center;
+      margin:15% auto; padding:25px; border:1px solid var(--solana-light-grey);
+      width:90%; max-width:450px; border-radius:12px; text-align:center;
       box-shadow:0 10px 25px -5px rgba(0,0,0,0.3),
                  0 10px 10px -5px rgba(0,0,0,0.2);
     }
     .modal-close-button {
-      color: var(--text-secondary);
-      float: right; font-size:28px; font-weight:bold; line-height:1;
-      cursor: pointer;
+      color: var(--text-secondary); float:right; font-size:28px;
+      font-weight:bold; line-height:1; cursor:pointer;
     }
-    .modal-close-button:hover {
-      color: var(--solana-green);
-    }
+    .modal-close-button:hover { color: var(--solana-green); }
 
     .input-error-text {
       color:#e53e3e; font-size:0.875rem; margin-top:0.25rem;
     }
 
-    /* form inputs */
     .form-input, .form-select {
       width:100%; padding:0.75rem 1rem;
       background-color: var(--solana-light-grey);
       border:1px solid var(--solana-grey);
-      border-radius:0.5rem;
-      color: var(--text-primary);
+      border-radius:0.5rem; color: var(--text-primary);
       transition:border-color .2s, box-shadow .2s;
     }
     .form-input:focus, .form-select:focus {
-      outline:none;
-      border-color: var(--solana-purple);
+      outline:none; border-color: var(--solana-purple);
       box-shadow:0 0 0 2px rgba(153,69,255,0.4);
     }
     .form-input.input-error, .form-select.input-error {
@@ -121,7 +107,6 @@
       cursor:not-allowed; opacity:0.7;
     }
 
-    /* buttons */
     .btn {
       display:inline-flex; align-items:center; justify-content:center;
       padding:0.75rem 1.5rem; font-weight:600; border-radius:0.5rem;
@@ -168,8 +153,8 @@
     .btn:disabled {
       opacity:0.5; cursor:not-allowed; box-shadow:none;
     }
-
     .break-all { word-break: break-all; }
+    canvas#qrCodeCanvas { width:192px; height:192px; }
   </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4">
@@ -180,14 +165,12 @@
       <img src="public/Logo.png"
            alt="solpay.cash logo"
            class="mx-auto h-16 w-auto mb-4" />
-      <!-- solid purple -->
-      
       <p class="text-text-secondary mt-2">
         Simple stablecoin payments on Solana.
       </p>
     </header>
 
-    <!-- REQUEST FORM -->
+    <!-- FORM -->
     <form id="paymentRequestForm" class="space-y-5">
       <div>
         <label for="walletAddress"
@@ -195,43 +178,27 @@
           Your Solana Wallet (Recipient)
         </label>
         <div class="flex space-x-2">
-          <input
-            type="text"
-            id="walletAddress"
-            name="walletAddress"
-            required
-            class="form-input flex-grow"
-            placeholder="Enter or connect recipient wallet…"
-          />
-          <button
-            type="button"
-            id="connectWalletButton"
-            class="btn btn-secondary text-sm px-4"
-          >
+          <input type="text" id="walletAddress" name="walletAddress" required
+                 class="form-input flex-grow"
+                 placeholder="Enter or connect recipient wallet…" />
+          <button type="button" id="connectWalletButton"
+                  class="btn btn-secondary text-sm px-4">
             Connect
           </button>
         </div>
         <p id="walletAddressError" class="input-error-text" style="display:none;"></p>
       </div>
-
       <div>
         <label for="amount"
                class="block text-sm font-medium text-text-secondary mb-1">
           Amount
         </label>
-        <input
-          type="number"
-          id="amount"
-          name="amount"
-          step="0.000001"
-          min="0.000001"
-          required
-          class="form-input"
-          placeholder="e.g., 10.50"
-        />
+        <input type="number" id="amount" name="amount"
+               step="0.000001" min="0.000001" required
+               class="form-input"
+               placeholder="e.g., 10.50" />
         <p id="amountError" class="input-error-text" style="display:none;"></p>
       </div>
-
       <div>
         <label for="stablecoin"
                class="block text-sm font-medium text-text-secondary mb-1">
@@ -242,74 +209,47 @@
           <option value="USDT">USDT (Tether)</option>
         </select>
       </div>
-
       <div>
         <label for="description"
                class="block text-sm font-medium text-text-secondary mb-1">
           Invoice Label / Reference
         </label>
-        <input
-          type="text"
-          id="description"
-          name="description"
-          required
-          class="form-input"
-          placeholder="e.g., Design Services Q2"
-        />
+        <input type="text" id="description" name="description" required
+               class="form-input"
+               placeholder="e.g., Design Services Q2" />
       </div>
-
       <div>
         <label for="message"
                class="block text-sm font-medium text-text-secondary mb-1">
           Message (Optional)
         </label>
-        <input
-          type="text"
-          id="message"
-          name="message"
-          class="form-input"
-          placeholder="e.g., Thanks for your business!"
-        />
+        <input type="text" id="message" name="message"
+               class="form-input"
+               placeholder="e.g., Thanks for your business!" />
       </div>
-
-      <button
-        type="submit"
-        id="generateRequestButton"
-        class="btn btn-primary w-full text-base py-3"
-      >
+      <button type="submit" id="generateRequestButton"
+              class="btn btn-primary w-full text-base py-3">
         Generate Payment Request
       </button>
     </form>
 
-    <!-- PAYMENT DETAILS -->
+    <!-- DETAILS -->
     <div id="paymentDetails" class="mt-8" style="display:none;">
-      <!-- solid green -->
-      <h2
-        id="paymentDetailsTitle"
-        class="text-2xl font-semibold text-center text-solana-green mb-6"
-      >
+      <h2 id="paymentDetailsTitle"
+          class="text-2xl font-semibold text-center text-solana-green mb-6">
         Payment Request Generated
       </h2>
-
       <div class="text-center mb-6">
-        <canvas
-          id="qrCodeCanvas"
-          width="192"
-          height="192"
-          class="mx-auto border-4 border-solana-grey rounded-lg shadow-md bg-white"
-        ></canvas>
+        <canvas id="qrCodeCanvas"
+                class="mx-auto border-4 border-solana-grey rounded-lg shadow-md bg-white">
+        </canvas>
         <p id="qrCodeError" class="input-error-text mt-2" style="display:none;"></p>
       </div>
-
-      <div
-        class="space-y-3 bg-solana-grey p-4 rounded-lg border border-solana-light-grey mb-6"
-      >
+      <div class="space-y-3 bg-solana-grey p-4 rounded-lg border border-solana-light-grey mb-6">
         <div class="flex justify-between items-center">
           <span class="text-sm font-medium text-text-secondary">Recipient:</span>
-          <span
-            id="displayWallet"
-            class="text-sm text-text-primary font-mono break-all text-right"
-          ></span>
+          <span id="displayWallet"
+                class="text-sm text-text-primary font-mono break-all text-right"></span>
         </div>
         <hr class="border-solana-light-grey" />
         <div class="flex justify-between items-center">
@@ -319,36 +259,27 @@
         <hr class="border-solana-light-grey" />
         <div class="flex justify-between items-center">
           <span class="text-sm font-medium text-text-secondary">Token:</span>
-          <span
-            id="displayToken"
-            class="text-sm text-text-primary text-right"
-          ></span>
+          <span id="displayToken"
+                class="text-sm text-text-primary text-right"></span>
         </div>
         <hr class="border-solana-light-grey" />
         <div class="flex justify-between items-center">
           <span class="text-sm font-medium text-text-secondary">Label:</span>
-          <span
-            id="displayDescription"
-            class="text-sm text-text-primary break-all text-right"
-          ></span>
+          <span id="displayDescription"
+                class="text-sm text-text-primary break-all text-right"></span>
         </div>
         <div id="displayMessageContainer" style="display:none;">
           <hr class="border-solana-light-grey" />
           <div class="flex justify-between items-start pt-2">
             <span class="text-sm font-medium text-text-secondary">Message:</span>
-            <span
-              id="displayMessage"
-              class="text-sm text-text-primary break-all text-right"
-            ></span>
+            <span id="displayMessage"
+                  class="text-sm text-text-primary break-all text-right"></span>
           </div>
         </div>
       </div>
 
-      <button
-        id="payWithWalletButton"
-        style="display:none;"
-        class="btn btn-primary w-full text-base py-3 mb-4"
-      >
+      <button id="payWithWalletButton" style="display:none;"
+              class="btn btn-primary w-full text-base py-3 mb-4">
         Connect Wallet & Pay
       </button>
 
@@ -357,66 +288,39 @@
           Or share these details:
         </p>
         <div class="relative">
-          <input
-            type="text"
-            id="solanaPayUrl"
-            readonly
-            class="form-input text-xs pr-24 truncate"
-            title="Solana Pay URI"
-          />
-          <button
-            onclick="copyToClipboard('solanaPayUrl','tooltipSolanaPayUrl')"
-            class="absolute right-1 top-1/2 transform -translate-y-1/2 btn btn-outline text-xs px-2 py-1 tooltip"
-          >
+          <input type="text" id="solanaPayUrl" readonly
+                 class="form-input text-xs pr-24 truncate"
+                 title="Solana Pay URI" />
+          <button onclick="copyToClipboard('solanaPayUrl','tooltipSolanaPayUrl')"
+                  class="absolute right-1 top-1/2 transform -translate-y-1/2 btn btn-outline text-xs px-2 py-1 tooltip">
             Copy URI
-            <span class="tooltiptext" id="tooltipSolanaPayUrl">
-              Copy Solana Pay URI
-            </span>
+            <span class="tooltiptext" id="tooltipSolanaPayUrl">Copy Solana Pay URI</span>
           </button>
         </div>
         <div class="relative">
-          <input
-            type="text"
-            id="walletAddressCopy"
-            readonly
-            class="form-input text-xs pr-24 truncate"
-            title="Recipient Wallet Address"
-          />
-          <button
-            onclick="copyToClipboard('walletAddressCopy','tooltipWalletAddressCopy')"
-            class="absolute right-1 top-1/2 transform -translate-y-1/2 btn btn-outline text-xs px-2 py-1 tooltip"
-          >
+          <input type="text" id="walletAddressCopy" readonly
+                 class="form-input text-xs pr-24 truncate"
+                 title="Recipient Wallet Address" />
+          <button onclick="copyToClipboard('walletAddressCopy','tooltipWalletAddressCopy')"
+                  class="absolute right-1 top-1/2 transform -translate-y-1/2 btn btn-outline text-xs px-2 py-1 tooltip">
             Copy Addr
-            <span class="tooltiptext" id="tooltipWalletAddressCopy">
-              Copy Wallet Address
-            </span>
+            <span class="tooltiptext" id="tooltipWalletAddressCopy">Copy Wallet Address</span>
           </button>
         </div>
         <div class="relative">
-          <input
-            type="text"
-            id="shareableLink"
-            readonly
-            class="form-input text-xs pr-24 truncate"
-            title="Shareable Payment Link"
-          />
-          <button
-            onclick="copyToClipboard('shareableLink','tooltipShareableLink')"
-            class="absolute right-1 top-1/2 transform -translate-y-1/2 btn btn-outline text-xs px-2 py-1 tooltip"
-          >
+          <input type="text" id="shareableLink" readonly
+                 class="form-input text-xs pr-24 truncate"
+                 title="Shareable Payment Link" />
+          <button onclick="copyToClipboard('shareableLink','tooltipShareableLink')"
+                  class="absolute right-1 top-1/2 transform -translate-y-1/2 btn btn-outline text-xs px-2 py-1 tooltip">
             Share Link
-            <span class="tooltiptext" id="tooltipShareableLink">
-              Copy Shareable Link
-            </span>
+            <span class="tooltiptext" id="tooltipShareableLink">Copy Shareable Link</span>
           </button>
         </div>
       </div>
 
-      <button
-        id="createNewRequestButton"
-        onclick="resetForm()"
-        class="mt-6 w-full btn btn-subtle text-base py-2.5"
-      >
+      <button id="createNewRequestButton" onclick="resetForm()"
+              class="mt-6 w-full btn btn-subtle text-base py-2.5">
         Create New Request
       </button>
     </div>
@@ -442,32 +346,32 @@
     };
     const SOLANA_RPC_URL = solanaWeb3.clusterApiUrl('mainnet-beta');
 
-    // DOM refs
-    const paymentRequestForm  = document.getElementById('paymentRequestForm');
-    const paymentDetailsDiv   = document.getElementById('paymentDetails');
-    const paymentDetailsTitle = document.getElementById('paymentDetailsTitle');
-    const qrCodeCanvas        = document.getElementById('qrCodeCanvas');
-    const qrCodeErrorEl       = document.getElementById('qrCodeError');
-    const walletAddressInput  = document.getElementById('walletAddress');
-    const walletAddressError  = document.getElementById('walletAddressError');
-    const amountInput         = document.getElementById('amount');
-    const amountError         = document.getElementById('amountError');
-    const stablecoinSelect    = document.getElementById('stablecoin');
-    const descriptionInput    = document.getElementById('description');
-    const messageInput        = document.getElementById('message');
-    const connectWalletButton = document.getElementById('connectWalletButton');
-    const payWithWalletButton = document.getElementById('payWithWalletButton');
-    const createNewRequestButton = document.getElementById('createNewRequestButton');
-    const sharingOptionsDiv   = document.getElementById('sharingOptions');
-    const notificationModal   = document.getElementById('notificationModal');
-    const notificationMessage = document.getElementById('notificationMessage');
-    const modalCloseButton    = document.querySelector('.modal-close-button');
+    // DOM elements
+    const paymentRequestForm    = document.getElementById('paymentRequestForm');
+    const paymentDetailsDiv     = document.getElementById('paymentDetails');
+    const paymentDetailsTitle   = document.getElementById('paymentDetailsTitle');
+    const qrCodeCanvas          = document.getElementById('qrCodeCanvas');
+    const qrCodeErrorEl         = document.getElementById('qrCodeError');
+    const walletAddressInput    = document.getElementById('walletAddress');
+    const walletAddressError    = document.getElementById('walletAddressError');
+    const amountInput           = document.getElementById('amount');
+    const amountError           = document.getElementById('amountError');
+    const stablecoinSelect      = document.getElementById('stablecoin');
+    const descriptionInput      = document.getElementById('description');
+    const messageInput          = document.getElementById('message');
+    const connectWalletButton   = document.getElementById('connectWalletButton');
+    const payWithWalletButton   = document.getElementById('payWithWalletButton');
+    const createNewRequestButton= document.getElementById('createNewRequestButton');
+    const sharingOptionsDiv     = document.getElementById('sharingOptions');
+    const notificationModal     = document.getElementById('notificationModal');
+    const notificationMessage   = document.getElementById('notificationMessage');
+    const modalCloseButton      = document.querySelector('.modal-close-button');
 
-    let isPayerView   = false,
-        payerPublicKey= null,
-        solanaConnection = null;
+    let isPayerView     = false;
+    let payerPublicKey  = null;
+    let solanaConnection= null;
 
-    // modal helpers
+    // Modal
     function showModal(msg, sticky=false) {
       notificationMessage.innerHTML = msg;
       notificationModal.style.display = 'block';
@@ -476,10 +380,10 @@
     function closeModal() {
       notificationModal.style.display = 'none';
     }
-    window.onclick = e => { if (e.target===notificationModal) closeModal(); };
+    window.onclick = e => { if (e.target === notificationModal) closeModal(); };
     if (modalCloseButton) modalCloseButton.onclick = closeModal;
 
-    // wallet validation
+    // Wallet validation
     function validateWalletRealtime() {
       const v = walletAddressInput.value;
       if (!v && !isPayerView) {
@@ -493,7 +397,7 @@
         walletAddressInput.classList.add('input-error');
         return false;
       }
-      if (v.length && (v.length<32||v.length>44)) {
+      if (v.length && (v.length < 32 || v.length > 44)) {
         walletAddressError.textContent='32–44 chars.';
         walletAddressError.style.display='block';
         walletAddressInput.classList.add('input-error');
@@ -503,19 +407,21 @@
       walletAddressInput.classList.remove('input-error');
       return true;
     }
-    function isWalletValid(w){ return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(w); }
+    function isWalletValid(w) {
+      return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(w);
+    }
     walletAddressInput.addEventListener('input', validateWalletRealtime);
 
-    // amount validation
-    function validateAmount(){
+    // Amount validation
+    function validateAmount() {
       const a = parseFloat(amountInput.value);
-      if (isNaN(a)||a<=0){
+      if (isNaN(a) || a <= 0) {
         amountError.textContent='Must be positive.';
         amountError.style.display='block';
         amountInput.classList.add('input-error');
         return false;
       }
-      if (amountInput.value.includes('.') && amountInput.value.split('.')[1].length>6){
+      if (amountInput.value.includes('.') && amountInput.value.split('.')[1].length > 6) {
         amountError.textContent='Max 6 decimals.';
         amountError.style.display='block';
         amountInput.classList.add('input-error');
@@ -527,272 +433,289 @@
     }
     amountInput.addEventListener('input', validateAmount);
 
-    // connect requestor
-    async function connectRequestorWallet(){
-      if (!window.solana||!window.solana.connect){
-        showModal("Install a Solana wallet first.",true);
+    // Connect requestor wallet
+    async function connectRequestorWallet() {
+      if (!window.solana || !window.solana.connect) {
+        showModal("Install a Solana wallet first.", true);
         return;
       }
       try {
         const resp = await window.solana.connect();
         const pk = resp.publicKey.toString();
-        walletAddressInput.value=pk;
+        walletAddressInput.value = pk;
         validateWalletRealtime();
         showModal(`Connected: ${pk.substr(0,6)}…${pk.substr(-6)}`);
-      } catch(e){
+      } catch(e) {
         console.error(e);
-        showModal("Connection failed.",true);
+        showModal("Connection failed.", true);
       }
     }
     connectWalletButton.addEventListener('click', connectRequestorWallet);
 
-    // on load: check URL for payer view
-    function initializeSolanaConnection(){
-      if (!solanaConnection){
-        solanaConnection=new solanaWeb3.Connection(SOLANA_RPC_URL,'confirmed');
+    // Initialize connection & load from URL
+    function initializeSolanaConnection() {
+      if (!solanaConnection) {
+        solanaConnection = new solanaWeb3.Connection(SOLANA_RPC_URL, 'confirmed');
       }
     }
-    function loadFromURLParams(){
-      const p=new URLSearchParams(window.location.search);
-      const w=p.get('wallet'), a=p.get('amount'),
-            t=p.get('token'), l=p.get('label'), m=p.get('message');
-      if (w&&a&&t&&l){
-        isPayerView=true;
+    function loadFromURLParams() {
+      const p = new URLSearchParams(window.location.search);
+      const w = p.get('wallet'), a = p.get('amount'),
+            t = p.get('token'), l = p.get('label'), m = p.get('message');
+      if (w && a && t && l) {
+        isPayerView = true;
         initializeSolanaConnection();
-        walletAddressInput.value=w;
-        amountInput.value=a;
-        for(const s in STABLECOIN_MINTS){
-          if(STABLECOIN_MINTS[s]===t){ stablecoinSelect.value=s; break; }
+        walletAddressInput.value = w;
+        amountInput.value = a;
+        for (const s in STABLECOIN_MINTS) {
+          if (STABLECOIN_MINTS[s] === t) { stablecoinSelect.value = s; break; }
         }
-        descriptionInput.value=decodeURIComponent(l);
-        if(m) messageInput.value=decodeURIComponent(m);
+        descriptionInput.value = decodeURIComponent(l);
+        if (m) messageInput.value = decodeURIComponent(m);
         generatePaymentRequest(true);
       }
     }
     window.onload = () => {
-      if(!window.QRious){
-        showModal("QR library not loaded.",true);
+      if (!window.QRious) {
+        showModal("QR library not loaded.", true);
         qrCodeErrorEl.textContent="QR unavailable."; qrCodeErrorEl.style.display='block';
       }
-      if(!window.solanaWeb3){
-        showModal("Solana Web3 failed to load.",true);
+      if (!window.solanaWeb3) {
+        showModal("Solana Web3 failed to load.", true);
       }
       loadFromURLParams();
     };
 
-    // form submit
-    paymentRequestForm.addEventListener('submit', e=>{
+    // Form submit
+    paymentRequestForm.addEventListener('submit', e => {
       e.preventDefault();
       generatePaymentRequest(false);
     });
 
-    async function generatePaymentRequest(isFromURL=false){
-      const rec=walletAddressInput.value.trim(),
-            amt=amountInput.value,
-            sym=stablecoinSelect.value,
-            desc=descriptionInput.value.trim(),
-            msg=messageInput.value.trim();
-      let ok=true;
-      if(!isWalletValid(rec)){
+    // Generate payment request & QR
+    async function generatePaymentRequest(isFromURL=false) {
+      const rec  = walletAddressInput.value.trim(),
+            amt  = amountInput.value,
+            sym  = stablecoinSelect.value,
+            desc = descriptionInput.value.trim(),
+            msg  = messageInput.value.trim();
+      let ok = true;
+      if (!isWalletValid(rec)) {
         walletAddressError.textContent='Invalid wallet.';
         walletAddressError.style.display='block';
         walletAddressInput.classList.add('input-error');
-        ok=false;
+        ok = false;
       } else {
         walletAddressError.style.display='none';
         walletAddressInput.classList.remove('input-error');
       }
-      if(!validateAmount()) ok=false;
-      if(!desc && !isPayerView){
-        showModal("Label required.",true);
-        ok=false;
+      if (!validateAmount()) ok = false;
+      if (!desc && !isPayerView) {
+        showModal("Label required.", true);
+        ok = false;
       }
-      if(!ok && !isFromURL){
-        showModal("Fix errors.",true);
+      if (!ok && !isFromURL) {
+        showModal("Fix errors.", true);
         return;
       }
-      const mint=STABLECOIN_MINTS[sym];
-      let payUrl=`solana:${rec}?amount=${amt}&spl-token=${mint}&label=${encodeURIComponent(desc)}`;
-      if(msg) payUrl+=`&message=${encodeURIComponent(msg)}`;
 
-      document.getElementById('displayWallet').textContent=rec;
-      document.getElementById('displayAmount').textContent=
+      const mint = STABLECOIN_MINTS[sym];
+      let payUrl = `solana:${rec}?amount=${amt}&spl-token=${mint}&label=${encodeURIComponent(desc)}`;
+      if (msg) payUrl += `&message=${encodeURIComponent(msg)}`;
+
+      document.getElementById('displayWallet').textContent     = rec;
+      document.getElementById('displayAmount').textContent     =
         `${parseFloat(amt).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:6})} ${sym}`;
-      document.getElementById('displayToken').textContent=
+      document.getElementById('displayToken').textContent      =
         `${sym} (${mint.substr(0,4)}…${mint.substr(-4)})`;
-      document.getElementById('displayDescription').textContent=desc;
-      const msgCont=document.getElementById('displayMessageContainer'),
-            msgEl=document.getElementById('displayMessage');
-      if(msg){ msgEl.textContent=msg; msgCont.style.display='block'; }
-      else msgCont.style.display='none';
+      document.getElementById('displayDescription').textContent = desc;
 
-      document.getElementById('solanaPayUrl').value=payUrl;
-      document.getElementById('walletAddressCopy').value=rec;
-
-      // QR generation
-      qrCodeErrorEl.style.display='none';
-      if(window.QRious){
-        try {
-          const fg = getComputedStyle(document.documentElement)
-                        .getPropertyValue('--text-primary').trim() || '#FFFFFF';
-          new QRious({
-            element: qrCodeCanvas,
-            value: payUrl,
-            size: 192,
-            padding: 8,
-            level: 'H',
-            background: '#FFFFFF',
-            foreground: fg
-          });
-          qrCodeCanvas.style.display='block';
-        } catch(e){
-          console.error(e);
-          qrCodeCanvas.style.display='none';
-          qrCodeErrorEl.textContent="Failed to generate QR.";
-          qrCodeErrorEl.style.display='block';
-          if(!isPayerView) showModal("Could not generate QR.",true);
-        }
+      const msgCont = document.getElementById('displayMessageContainer'),
+            msgEl   = document.getElementById('displayMessage');
+      if (msg) {
+        msgEl.textContent = msg;
+        msgCont.style.display = 'block';
       } else {
-        qrCodeCanvas.style.display='none';
-        qrCodeErrorEl.textContent="QR lib not loaded.";
-        qrCodeErrorEl.style.display='block';
+        msgCont.style.display = 'none';
       }
 
-      // share link
-      const params=new URLSearchParams({wallet:rec,amount:amt,token:mint,label:desc});
-      if(msg) params.set('message',msg);
-      document.getElementById('shareableLink').value=
+      document.getElementById('solanaPayUrl').value      = payUrl;
+      document.getElementById('walletAddressCopy').value = rec;
+
+      // QR generation (black foreground)
+      qrCodeErrorEl.style.display = 'none';
+      if (window.QRious) {
+        try {
+          new QRious({
+            element:    qrCodeCanvas,
+            value:      payUrl,
+            size:       192,
+            padding:    8,
+            level:      'H',
+            background: '#FFFFFF',
+            foreground: '#000000'
+          });
+          qrCodeCanvas.style.display = 'block';
+        } catch (e) {
+          console.error(e);
+          qrCodeCanvas.style.display = 'none';
+          qrCodeErrorEl.textContent = "Failed to generate QR.";
+          qrCodeErrorEl.style.display = 'block';
+          if (!isPayerView) showModal("Could not generate QR.", true);
+        }
+      } else {
+        qrCodeCanvas.style.display = 'none';
+        qrCodeErrorEl.textContent = "QR lib not loaded.";
+        qrCodeErrorEl.style.display = 'block';
+      }
+
+      // Share link
+      const params = new URLSearchParams({
+        wallet: rec,
+        amount: amt,
+        token:  mint,
+        label:  desc
+      });
+      if (msg) params.set('message', msg);
+      document.getElementById('shareableLink').value =
         `${window.location.origin}${window.location.pathname}?${params.toString()}`;
 
-      // UI toggle
-      paymentRequestForm.style.display='none';
-      paymentDetailsDiv.style.display='block';
+      // Toggle UI
+      paymentRequestForm.style.display = 'none';
+      paymentDetailsDiv.style.display  = 'block';
 
-      if(isPayerView){
-        paymentDetailsTitle.textContent="Confirm & Pay";
+      if (isPayerView) {
+        paymentDetailsTitle.textContent = "Confirm & Pay";
         [walletAddressInput,amountInput,stablecoinSelect,descriptionInput,messageInput]
-          .forEach(i=>i.disabled=true);
-        connectWalletButton.style.display='none';
-        payWithWalletButton.style.display='block';
-        payWithWalletButton.textContent = payerPublicKey?'Confirm & Pay':'Connect Wallet & Pay';
-        payWithWalletButton.onclick = connectAndExecutePayment;
-        sharingOptionsDiv.style.display='none';
-        createNewRequestButton.textContent='Back to Create Request';
+          .forEach(i => i.disabled = true);
+        connectWalletButton.style.display     = 'none';
+        payWithWalletButton.style.display     = 'block';
+        payWithWalletButton.textContent       = payerPublicKey
+                                                ? 'Confirm & Pay'
+                                                : 'Connect Wallet & Pay';
+        payWithWalletButton.onclick           = connectAndExecutePayment;
+        sharingOptionsDiv.style.display       = 'none';
+        createNewRequestButton.textContent    = 'Back to Create Request';
       } else {
-        paymentDetailsTitle.textContent="Payment Request Generated";
-        payWithWalletButton.style.display='none';
-        sharingOptionsDiv.style.display='block';
-        createNewRequestButton.textContent='Create New Request';
+        paymentDetailsTitle.textContent       = "Payment Request Generated";
+        payWithWalletButton.style.display     = 'none';
+        sharingOptionsDiv.style.display       = 'block';
+        createNewRequestButton.textContent    = 'Create New Request';
       }
     }
 
-    // payer: connect & send
-    async function connectAndExecutePayment(){
-      if(!window.solana||!window.solana.connect){
-        showModal("Wallet not detected.",true);
+    // Payer: connect & pay
+    async function connectAndExecutePayment() {
+      if (!window.solana || !window.solana.connect) {
+        showModal("Wallet not detected.", true);
         return;
       }
       initializeSolanaConnection();
       try {
-        if(!window.solana.isConnected||!payerPublicKey){
-          showModal("Connecting wallet...",true);
-          const resp=await window.solana.connect({onlyIfTrusted:false});
-          payerPublicKey=resp.publicKey;
-          showModal(`Connected: ${payerPublicKey.toBase58().substr(0,6)}…`,false);
+        if (!window.solana.isConnected || !payerPublicKey) {
+          showModal("Connecting wallet...", true);
+          const resp = await window.solana.connect({ onlyIfTrusted: false });
+          payerPublicKey = resp.publicKey;
+          showModal(`Connected: ${payerPublicKey.toBase58().substr(0,6)}…`, false);
         }
         await processPaymentTransaction();
-      } catch(err){
+      } catch (err) {
         console.error(err);
-        showModal(`Payment failed: ${err.message||err}`,true);
-        payerPublicKey=null;
+        showModal(`Payment failed: ${err.message||err}`, true);
+        payerPublicKey = null;
       }
     }
 
-    async function processPaymentTransaction(){
-      const recAddr=walletAddressInput.value;
-      const amtStr=amountInput.value;
-      const sym=stablecoinSelect.value;
-      const mint=STABLECOIN_MINTS[sym];
-      if(!recAddr||!amtStr||!mint){
-        showModal("Incomplete payment details.",true);
+    async function processPaymentTransaction() {
+      const recAddr = walletAddressInput.value;
+      const amtStr  = amountInput.value;
+      const sym     = stablecoinSelect.value;
+      const mint    = STABLECOIN_MINTS[sym];
+      if (!recAddr || !amtStr || !mint) {
+        showModal("Incomplete payment details.", true);
         return;
       }
-      const amt=parseFloat(amtStr);
-      payWithWalletButton.disabled=true;
-      payWithWalletButton.textContent='Processing...';
-      showModal("Preparing transaction…",true);
+      const amt = parseFloat(amtStr);
+      payWithWalletButton.disabled   = true;
+      payWithWalletButton.textContent = 'Processing...';
+      showModal("Preparing transaction…", true);
 
       try {
-        const recipientPK=new solanaWeb3.PublicKey(recAddr),
-              mintPK=new solanaWeb3.PublicKey(mint);
-        let decimals=6;
+        const recipientPK     = new solanaWeb3.PublicKey(recAddr);
+        const mintPK          = new solanaWeb3.PublicKey(mint);
+        let decimals = 6;
         try {
-          const info=await solanaConnection.getParsedAccountInfo(mintPK);
-          if(info.value?.data?.parsed?.info?.decimals!=null)
-            decimals=info.value.data.parsed.info.decimals;
-        } catch{}
-        const amountUnits=Math.round(amt*Math.pow(10,decimals));
-        const payerTokenAddr    = await solanaWeb3.getAssociatedTokenAddress(mintPK,payerPublicKey);
-        const recipientTokenAddr= await solanaWeb3.getAssociatedTokenAddress(mintPK,recipientPK);
-        const tx=new solanaWeb3.Transaction();
-        tx.add(solanaWeb3.createTransferInstruction(
-          payerTokenAddr, recipientTokenAddr, payerPublicKey, amountUnits
-        ));
-        tx.feePayer=payerPublicKey;
-        const latest=await solanaConnection.getLatestBlockhash();
-        tx.recentBlockhash=latest.blockhash;
-
-        const signed=await window.solana.signTransaction(tx);
-        const sig=await solanaConnection.sendRawTransaction(signed.serialize());
-        showModal(`Submitted! Sig: ${sig.substr(0,10)}…`,true);
-        const conf=await solanaConnection.confirmTransaction({
-          signature: sig,
-          blockhash: tx.recentBlockhash,
-          lastValidBlockHeight: latest.lastValidBlockHeight
-        },'confirmed');
-        if(conf.value.err) throw new Error(JSON.stringify(conf.value.err));
-        showModal(
-          `Success! <a href="https://solscan.io/tx/${sig}?cluster=mainnet-beta" target="_blank"
-            class="text-solana-green hover:underline">
-            View on Solscan
-          </a>`,true
+          const info = await solanaConnection.getParsedAccountInfo(mintPK);
+          const parsed = info.value?.data?.parsed?.info;
+          if (parsed?.decimals != null) decimals = parsed.decimals;
+        } catch {}
+        const amountUnits = Math.round(amt * Math.pow(10, decimals));
+        const payerTokenAddr     = await solanaWeb3.getAssociatedTokenAddress(mintPK, payerPublicKey);
+        const recipientTokenAddr = await solanaWeb3.getAssociatedTokenAddress(mintPK, recipientPK);
+        const tx = new solanaWeb3.Transaction();
+        tx.add(
+          solanaWeb3.createTransferInstruction(
+            payerTokenAddr,
+            recipientTokenAddr,
+            payerPublicKey,
+            amountUnits
+          )
         );
-        payWithWalletButton.textContent='Payment Sent!';
-      } catch(error){
+        tx.feePayer      = payerPublicKey;
+        const latest     = await solanaConnection.getLatestBlockhash();
+        tx.recentBlockhash = latest.blockhash;
+
+        const signed = await window.solana.signTransaction(tx);
+        const sig    = await solanaConnection.sendRawTransaction(signed.serialize());
+        showModal(`Submitted! Sig: ${sig.substr(0,10)}…`, true);
+
+        const conf = await solanaConnection.confirmTransaction(
+          { signature: sig, blockhash: tx.recentBlockhash, lastValidBlockHeight: latest.lastValidBlockHeight },
+          'confirmed'
+        );
+        if (conf.value.err) throw new Error(JSON.stringify(conf.value.err));
+
+        showModal(
+          `Success! <a href="https://solscan.io/tx/${sig}?cluster=mainnet-beta" target="_blank" class="text-solana-green hover:underline">View on Solscan</a>`,
+          true
+        );
+        payWithWalletButton.textContent = 'Payment Sent!';
+      } catch (error) {
         console.error(error);
-        showModal(`Error: ${error.message||error}`,true);
-        payWithWalletButton.disabled=false;
-        payWithWalletButton.textContent='Try Payment Again';
+        showModal(`Error: ${error.message||error}`, true);
+        payWithWalletButton.disabled   = false;
+        payWithWalletButton.textContent = 'Try Payment Again';
       }
     }
 
-    // clipboard
-    function copyToClipboard(id, tipId){
-      const inp=document.getElementById(id);
+    // Clipboard
+    function copyToClipboard(id, tipId) {
+      const inp = document.getElementById(id);
       inp.select();
       inp.setSelectionRange(0,99999);
       navigator.clipboard.writeText(inp.value)
-        .then(()=>showModal('Copied!'))
-        .catch(()=>showModal('Copy failed.',true));
+        .then(() => showModal('Copied!'))
+        .catch(() => showModal('Copy failed.', true));
     }
 
-    // reset
-    function resetForm(){
+    // Reset form
+    function resetForm() {
       paymentRequestForm.reset();
-      [walletAddressError,amountError].forEach(e=>e.style.display='none');
-      [walletAddressInput,amountInput].forEach(i=>i.classList.remove('input-error'));
+      [walletAddressError, amountError].forEach(e => e.style.display = 'none');
+      [walletAddressInput, amountInput].forEach(i => i.classList.remove('input-error'));
       [walletAddressInput,amountInput,stablecoinSelect,descriptionInput,messageInput]
-        .forEach(i=>i.disabled=false);
-      paymentDetailsDiv.style.display='none';
-      paymentRequestForm.style.display='block';
-      connectWalletButton.style.display='inline-flex';
-      payWithWalletButton.style.display='none';
-      payWithWalletButton.disabled=false;
-      payWithWalletButton.textContent='Connect Wallet & Pay';
-      sharingOptionsDiv.style.display='block';
-      createNewRequestButton.textContent='Create New Request';
-      isPayerView=false; payerPublicKey=null;
-      window.history.pushState({},document.title,window.location.pathname);
+        .forEach(i => i.disabled = false);
+      paymentDetailsDiv.style.display   = 'none';
+      paymentRequestForm.style.display  = 'block';
+      connectWalletButton.style.display = 'inline-flex';
+      payWithWalletButton.style.display = 'none';
+      payWithWalletButton.disabled      = false;
+      payWithWalletButton.textContent   = 'Connect Wallet & Pay';
+      sharingOptionsDiv.style.display    = 'block';
+      createNewRequestButton.textContent = 'Create New Request';
+      isPayerView = false;
+      payerPublicKey = null;
+      window.history.pushState({}, document.title, window.location.pathname);
       walletAddressInput.focus();
     }
   </script>
