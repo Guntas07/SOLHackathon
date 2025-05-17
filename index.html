@@ -20,7 +20,7 @@
       --solana-dark-green:  #00C781;
       --solana-grey:        #1a1a1a;
       --solana-light-grey:  #2c2c2c;
-      --card-bg:            #161616;  /* card background */
+      --card-bg:            #161616;
       /* LIGHTER page background */
       --body-bg:            #2f2d2d;
       --text-primary:       #FFFFFF;
@@ -180,8 +180,6 @@
       <img src="public/Logo.png"
            alt="solpay.cash logo"
            class="mx-auto h-16 w-auto mb-4" />
-      <!-- solid purple -->
-      
       <p class="text-text-secondary mt-2">
         Simple stablecoin payments on Solana.
       </p>
@@ -283,7 +281,6 @@
 
     <!-- PAYMENT DETAILS -->
     <div id="paymentDetails" class="mt-8" style="display:none;">
-      <!-- solid green -->
       <h2
         id="paymentDetailsTitle"
         class="text-2xl font-semibold text-center text-solana-green mb-6"
@@ -633,8 +630,6 @@
       qrCodeErrorEl.style.display='none';
       if(window.QRious){
         try {
-          const fg = getComputedStyle(document.documentElement)
-                        .getPropertyValue('--text-primary').trim() || '#FFFFFF';
           new QRious({
             element: qrCodeCanvas,
             value: payUrl,
@@ -642,7 +637,7 @@
             padding: 8,
             level: 'H',
             background: '#FFFFFF',
-            foreground: fg
+            foreground: '#000000'  // solid black modules
           });
           qrCodeCanvas.style.display='block';
         } catch(e){
