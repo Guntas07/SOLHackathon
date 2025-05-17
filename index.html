@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>solpay.cash - Simple Solana Payments</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
   <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
   <style>
     /* Solana Brand + Dark Theme Colors */
     :root {
@@ -18,9 +21,10 @@
       --solana-grey:        #1a1a1a;
       --solana-light-grey:  #2c2c2c;
       --card-bg:            #161616;  /* card background */
-      --body-bg:            #222121;  /* page background */
-      --text-primary:       #FFFFFF;  /* main text */
-      --text-secondary:     #a0aec0;  /* secondary text */
+      /* LIGHTER page background */
+      --body-bg:            #2f2d2d;
+      --text-primary:       #FFFFFF;
+      --text-secondary:     #a0aec0;
     }
 
     body {
@@ -28,8 +32,6 @@
       background-color: var(--body-bg);
       color: var(--text-primary);
     }
-
-    /* helper classes for your custom Tailwind-like names */
     .bg-card-bg {
       background-color: var(--card-bg) !important;
     }
@@ -41,54 +43,29 @@
     ::selection { background: var(--solana-green); color: var(--body-bg); }
     ::-moz-selection { background: var(--solana-green); color: var(--body-bg); }
 
-    /* tooltip */
+    /* tooltip, scrollbar, modal… (unchanged) */
     .tooltip { position: relative; display: inline-block; }
     .tooltip .tooltiptext {
-      visibility: hidden;
-      width: 140px;
-      background-color: var(--solana-light-grey);
-      color: var(--text-primary);
-      text-align: center;
-      border-radius: 6px;
-      padding: 5px 0;
-      position: absolute;
-      z-index: 10;
-      bottom: 125%;
-      left: 50%;
-      margin-left: -70px;
-      opacity: 0;
-      transition: opacity 0.3s;
-      font-size: 0.75rem;
-    }
-    .tooltip .tooltiptext::after {
-      content: "";
-      position: absolute;
-      top: 100%;
-      left: 50%;
-      margin-left: -5px;
-      border-width: 5px;
-      border-style: solid;
-      border-color: var(--solana-light-grey) transparent transparent transparent;
+      visibility: hidden; width: 140px;
+      background: var(--solana-light-grey); color: var(--text-primary);
+      text-align: center; border-radius: 6px; padding: 5px 0;
+      position: absolute; z-index: 10; bottom: 125%; left: 50%;
+      margin-left: -70px; opacity: 0; transition: opacity .3s;
+      font-size: .75rem;
     }
     .tooltip:hover .tooltiptext { visibility: visible; opacity: 1; }
-
-    /* scrollbar */
     ::-webkit-scrollbar { width: 8px; }
     ::-webkit-scrollbar-track { background: var(--solana-grey); }
     ::-webkit-scrollbar-thumb {
-      background: var(--solana-purple);
-      border-radius: 4px;
+      background: var(--solana-purple); border-radius: 4px;
     }
     ::-webkit-scrollbar-thumb:hover { background: var(--solana-dark-purple); }
-
-    /* modal */
     .modal { display: none; position: fixed; z-index:1000;
       left:0; top:0; width:100%; height:100%; overflow:auto;
       background-color: rgba(0,0,0,0.7);
     }
     .modal-content {
-      background-color: var(--card-bg);
-      color: var(--text-primary);
+      background-color: var(--card-bg); color: var(--text-primary);
       margin: 15% auto; padding:25px;
       border:1px solid var(--solana-light-grey);
       width:90%; max-width:450px; border-radius:12px;
@@ -99,11 +76,10 @@
     .modal-close-button {
       color: var(--text-secondary);
       float: right; font-size:28px; font-weight:bold; line-height:1;
+      cursor: pointer;
     }
-    .modal-close-button:hover,
-    .modal-close-button:focus {
+    .modal-close-button:hover {
       color: var(--solana-green);
-      text-decoration:none; cursor:pointer;
     }
 
     .input-error-text {
@@ -155,7 +131,7 @@
     .btn:active { transform:translateY(1px); }
     .btn-primary {
       background-color: var(--solana-green);
-      color:            var(--solana-black, #000);
+      color:            var(--body-bg);
       box-shadow:       0 4px 14px -1px rgba(20,241,149,0.25);
     }
     .btn-primary:hover {
@@ -197,17 +173,23 @@
   </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4">
-    <header class="text-center mb-8">
-        <img src="public/Logo.png"
-             alt="solpay.cash logo"
-             class="mx-auto h-16 w-auto mb-4">
-        <h1 class="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-solana-purple to-solana-green">
-          solpay.cash
-        </h1>
-        <p class="text-text-secondary mt-2">Simple stablecoin payments on Solana.</p>
-      </header>
-      
+  <div class="bg-card-bg shadow-xl rounded-xl p-6 md:p-10 w-full max-w-md">
 
+    <!-- HEADER -->
+    <header class="text-center mb-8">
+      <img src="/Logo.png"
+           alt="solpay.cash logo"
+           class="mx-auto h-16 w-auto mb-4" />
+      <!-- solid purple -->
+      <h1 class="text-4xl font-bold text-solana-purple">
+        solpay.cash
+      </h1>
+      <p class="text-text-secondary mt-2">
+        Simple stablecoin payments on Solana.
+      </p>
+    </header>
+
+    <!-- REQUEST FORM -->
     <form id="paymentRequestForm" class="space-y-5">
       <div>
         <label for="walletAddress"
@@ -215,27 +197,43 @@
           Your Solana Wallet (Recipient)
         </label>
         <div class="flex space-x-2">
-          <input type="text" id="walletAddress" name="walletAddress" required
-                 class="form-input flex-grow placeholder-gray-500"
-                 placeholder="Enter or connect recipient wallet...">
-          <button type="button" id="connectWalletButton"
-                  class="btn btn-secondary text-sm px-4">
+          <input
+            type="text"
+            id="walletAddress"
+            name="walletAddress"
+            required
+            class="form-input flex-grow"
+            placeholder="Enter or connect recipient wallet…"
+          />
+          <button
+            type="button"
+            id="connectWalletButton"
+            class="btn btn-secondary text-sm px-4"
+          >
             Connect
           </button>
         </div>
         <p id="walletAddressError" class="input-error-text" style="display:none;"></p>
       </div>
+
       <div>
         <label for="amount"
                class="block text-sm font-medium text-text-secondary mb-1">
           Amount
         </label>
-        <input type="number" id="amount" name="amount"
-               step="0.000001" min="0.000001" required
-               class="form-input placeholder-gray-500"
-               placeholder="e.g., 10.50">
+        <input
+          type="number"
+          id="amount"
+          name="amount"
+          step="0.000001"
+          min="0.000001"
+          required
+          class="form-input"
+          placeholder="e.g., 10.50"
+        />
         <p id="amountError" class="input-error-text" style="display:none;"></p>
       </div>
+
       <div>
         <label for="stablecoin"
                class="block text-sm font-medium text-text-secondary mb-1">
@@ -246,96 +244,132 @@
           <option value="USDT">USDT (Tether)</option>
         </select>
       </div>
+
       <div>
         <label for="description"
                class="block text-sm font-medium text-text-secondary mb-1">
           Invoice Label / Reference
         </label>
-        <input type="text" id="description" name="description" required
-               class="form-input placeholder-gray-500"
-               placeholder="e.g., Design Services Q2">
+        <input
+          type="text"
+          id="description"
+          name="description"
+          required
+          class="form-input"
+          placeholder="e.g., Design Services Q2"
+        />
       </div>
+
       <div>
         <label for="message"
                class="block text-sm font-medium text-text-secondary mb-1">
           Message (Optional)
         </label>
-        <input type="text" id="message" name="message"
-               class="form-input placeholder-gray-500"
-               placeholder="e.g., Thanks for your business!">
+        <input
+          type="text"
+          id="message"
+          name="message"
+          class="form-input"
+          placeholder="e.g., Thanks for your business!"
+        />
       </div>
-      <button type="submit" id="generateRequestButton"
-              class="btn btn-primary w-full text-base py-3">
+
+      <button
+        type="submit"
+        id="generateRequestButton"
+        class="btn btn-primary w-full text-base py-3"
+      >
         Generate Payment Request
       </button>
     </form>
 
+    <!-- PAYMENT DETAILS -->
     <div id="paymentDetails" class="mt-8" style="display:none;">
-      <h2 id="paymentDetailsTitle"
-          class="text-2xl font-semibold text-center text-transparent
-                 bg-clip-text bg-gradient-to-r from-solana-purple to-solana-green mb-6">
-        Payment Request
+      <!-- solid green -->
+      <h2
+        id="paymentDetailsTitle"
+        class="text-2xl font-semibold text-center text-solana-green mb-6"
+      >
+        Payment Request Generated
       </h2>
+
       <div class="text-center mb-6">
-        <canvas id="qrCodeCanvas"
-                class="mx-auto border-4 border-solana-grey rounded-lg shadow-md bg-white">
-        </canvas>
+        <canvas
+          id="qrCodeCanvas"
+          width="192"
+          height="192"
+          class="mx-auto border-4 border-solana-grey rounded-lg shadow-md bg-white"
+        ></canvas>
         <p id="qrCodeError" class="input-error-text mt-2" style="display:none;"></p>
       </div>
-      <div class="space-y-3 bg-solana-grey p-4 rounded-lg
-                  border border-solana-light-grey mb-6">
+
+      <div
+        class="space-y-3 bg-solana-grey p-4 rounded-lg border border-solana-light-grey mb-6"
+      >
         <div class="flex justify-between items-center">
           <span class="text-sm font-medium text-text-secondary">Recipient:</span>
-          <span id="displayWallet"
-                class="text-sm text-text-primary font-mono break-all text-right">
-          </span>
+          <span
+            id="displayWallet"
+            class="text-sm text-text-primary font-mono break-all text-right"
+          ></span>
         </div>
-        <hr class="border-solana-light-grey">
+        <hr class="border-solana-light-grey" />
         <div class="flex justify-between items-center">
           <span class="text-sm font-medium text-text-secondary">Total Amount:</span>
-          <span id="displayAmount"
-                class="text-lg font-semibold text-solana-green">
-          </span>
+          <span id="displayAmount" class="text-lg font-semibold text-solana-green"></span>
         </div>
-        <hr class="border-solana-light-grey">
+        <hr class="border-solana-light-grey" />
         <div class="flex justify-between items-center">
           <span class="text-sm font-medium text-text-secondary">Token:</span>
-          <span id="displayToken"
-                class="text-sm text-text-primary text-right">
-          </span>
+          <span
+            id="displayToken"
+            class="text-sm text-text-primary text-right"
+          ></span>
         </div>
-        <hr class="border-solana-light-grey">
+        <hr class="border-solana-light-grey" />
         <div class="flex justify-between items-center">
           <span class="text-sm font-medium text-text-secondary">Label:</span>
-          <span id="displayDescription"
-                class="text-sm text-text-primary text-right break-all">
-          </span>
+          <span
+            id="displayDescription"
+            class="text-sm text-text-primary break-all text-right"
+          ></span>
         </div>
         <div id="displayMessageContainer" style="display:none;">
-          <hr class="border-solana-light-grey">
+          <hr class="border-solana-light-grey" />
           <div class="flex justify-between items-start pt-2">
             <span class="text-sm font-medium text-text-secondary">Message:</span>
-            <span id="displayMessage"
-                  class="text-sm text-text-primary text-right break-all">
-            </span>
+            <span
+              id="displayMessage"
+              class="text-sm text-text-primary break-all text-right"
+            ></span>
           </div>
         </div>
       </div>
-      <button id="payWithWalletButton" style="display:none;"
-              class="btn btn-primary w-full text-base py-3 mb-4">
-        Connect Wallet &amp; Pay
+
+      <button
+        id="payWithWalletButton"
+        style="display:none;"
+        class="btn btn-primary w-full text-base py-3 mb-4"
+      >
+        Connect Wallet & Pay
       </button>
+
       <div id="sharingOptions" class="mt-4 space-y-3">
         <p class="text-xs text-text-secondary text-center mb-2">
           Or share these details:
         </p>
         <div class="relative">
-          <input type="text" id="solanaPayUrl" readonly
-                 class="form-input text-xs pr-24 truncate"
-                 title="Solana Pay URI">
-          <button onclick="copyToClipboard('solanaPayUrl','tooltipSolanaPayUrl')"
-                  class="absolute right-1 top-1/2 transform -translate-y-1/2
-                         btn btn-outline text-xs px-2 py-1 tooltip">
+          <input
+            type="text"
+            id="solanaPayUrl"
+            readonly
+            class="form-input text-xs pr-24 truncate"
+            title="Solana Pay URI"
+          />
+          <button
+            onclick="copyToClipboard('solanaPayUrl','tooltipSolanaPayUrl')"
+            class="absolute right-1 top-1/2 transform -translate-y-1/2 btn btn-outline text-xs px-2 py-1 tooltip"
+          >
             Copy URI
             <span class="tooltiptext" id="tooltipSolanaPayUrl">
               Copy Solana Pay URI
@@ -343,12 +377,17 @@
           </button>
         </div>
         <div class="relative">
-          <input type="text" id="walletAddressCopy" readonly
-                 class="form-input text-xs pr-24 truncate"
-                 title="Recipient Wallet Address">
-          <button onclick="copyToClipboard('walletAddressCopy','tooltipWalletAddressCopy')"
-                  class="absolute right-1 top-1/2 transform -translate-y-1/2
-                         btn btn-outline text-xs px-2 py-1 tooltip">
+          <input
+            type="text"
+            id="walletAddressCopy"
+            readonly
+            class="form-input text-xs pr-24 truncate"
+            title="Recipient Wallet Address"
+          />
+          <button
+            onclick="copyToClipboard('walletAddressCopy','tooltipWalletAddressCopy')"
+            class="absolute right-1 top-1/2 transform -translate-y-1/2 btn btn-outline text-xs px-2 py-1 tooltip"
+          >
             Copy Addr
             <span class="tooltiptext" id="tooltipWalletAddressCopy">
               Copy Wallet Address
@@ -356,12 +395,17 @@
           </button>
         </div>
         <div class="relative">
-          <input type="text" id="shareableLink" readonly
-                 class="form-input text-xs pr-24 truncate"
-                 title="Shareable Payment Link">
-          <button onclick="copyToClipboard('shareableLink','tooltipShareableLink')"
-                  class="absolute right-1 top-1/2 transform -translate-y-1/2
-                         btn btn-outline text-xs px-2 py-1 tooltip">
+          <input
+            type="text"
+            id="shareableLink"
+            readonly
+            class="form-input text-xs pr-24 truncate"
+            title="Shareable Payment Link"
+          />
+          <button
+            onclick="copyToClipboard('shareableLink','tooltipShareableLink')"
+            class="absolute right-1 top-1/2 transform -translate-y-1/2 btn btn-outline text-xs px-2 py-1 tooltip"
+          >
             Share Link
             <span class="tooltiptext" id="tooltipShareableLink">
               Copy Shareable Link
@@ -369,8 +413,12 @@
           </button>
         </div>
       </div>
-      <button id="createNewRequestButton" onclick="resetForm()"
-              class="mt-6 w-full btn btn-subtle text-base py-2.5">
+
+      <button
+        id="createNewRequestButton"
+        onclick="resetForm()"
+        class="mt-6 w-full btn btn-subtle text-base py-2.5"
+      >
         Create New Request
       </button>
     </div>
@@ -583,7 +631,7 @@
       document.getElementById('solanaPayUrl').value=payUrl;
       document.getElementById('walletAddressCopy').value=rec;
 
-      // ** QR generation with real hex color **
+      // QR generation
       qrCodeErrorEl.style.display='none';
       if(window.QRious){
         try {
