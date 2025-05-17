@@ -1,970 +1,754 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>solpay.cash - Simple Solana Payments</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
-    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        /* Solana Brand Colors */
-        :root {
-            --solana-purple: #9945FF;
-            --solana-green: #14F195;
-            --solana-dark-purple: #8A2BE2; /* Darker purple for hover/secondary */
-            --solana-dark-green: #00C781;  /* Darker green for hover */
-            --solana-black: #0d0d0d; /* Near black for text/bg */
-            --solana-grey: #1a1a1a; /* Dark grey */
-            --solana-light-grey: #2c2c2c; /* Lighter grey for inputs */
-            --text-primary: #FFFFFF;
-            --text-secondary: #a0aec0; /* Tailwind gray-400 equivalent */
-            --card-bg: #161616; /* Slightly off-black for card */
-            --body-bg: #0A0A0A; /* Very dark background */
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>solpay.cash - Simple Solana Payments</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+  <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Solana Brand + Dark Theme Colors */
+    :root {
+      --solana-purple:      #9945FF;
+      --solana-green:       #14F195;
+      --solana-dark-purple: #8A2BE2;
+      --solana-dark-green:  #00C781;
+      --solana-grey:        #1a1a1a;
+      --solana-light-grey:  #2c2c2c;
+      --card-bg:            #161616;  /* card background */
+      --body-bg:            #222121;  /* page background */
+      --text-primary:       #FFFFFF;  /* main text */
+      --text-secondary:     #a0aec0;  /* secondary text */
+    }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--body-bg);
-            color: var(--text-primary);
-        }
-        /* Selection styling */
-        ::selection {
-            background-color: var(--solana-green);
-            color: var(--solana-black);
-        }
-        ::-moz-selection {
-            background-color: var(--solana-green);
-            color: var(--solana-black);
-        }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--body-bg);
+      color: var(--text-primary);
+    }
 
-        .tooltip {
-            position: relative;
-            display: inline-block;
-        }
-        .tooltip .tooltiptext {
-            visibility: hidden;
-            width: 140px;
-            background-color: var(--solana-light-grey);
-            color: var(--text-primary);
-            text-align: center;
-            border-radius: 6px;
-            padding: 5px 0;
-            position: absolute;
-            z-index: 10;
-            bottom: 125%;
-            left: 50%;
-            margin-left: -70px;
-            opacity: 0;
-            transition: opacity 0.3s;
-            font-size: 0.75rem;
-        }
-        .tooltip .tooltiptext::after {
-            content: "";
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            margin-left: -5px;
-            border-width: 5px;
-            border-style: solid;
-            border-color: var(--solana-light-grey) transparent transparent transparent;
-        }
-        .tooltip:hover .tooltiptext {
-            visibility: visible;
-            opacity: 1;
-        }
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: var(--solana-grey);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--solana-purple);
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--solana-dark-purple);
-        }
-        .modal {
-            display: none; 
-            position: fixed; 
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%; 
-            height: 100%; 
-            overflow: auto; 
-            background-color: rgba(0,0,0,0.7); 
-        }
-        .modal-content {
-            background-color: var(--card-bg);
-            color: var(--text-primary);
-            margin: 15% auto; 
-            padding: 25px;
-            border: 1px solid var(--solana-light-grey);
-            width: 90%;
-            max-width: 450px;
-            border-radius: 12px;
-            text-align: center;
-            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3), 0 10px 10px -5px rgba(0,0,0,0.2);
-        }
-        .modal-close-button {
-            color: var(--text-secondary);
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            line-height: 1;
-        }
-        .modal-close-button:hover,
-        .modal-close-button:focus {
-            color: var(--solana-green);
-            text-decoration: none;
-            cursor: pointer;
-        }
-        .input-error-text {
-            color: #e53e3e; /* Tailwind red-600 */
-            font-size: 0.875rem; 
-            margin-top: 0.25rem; 
-        }
-        .form-input, .form-select {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            background-color: var(--solana-light-grey);
-            border: 1px solid var(--solana-grey);
-            border-radius: 0.5rem;
-            color: var(--text-primary);
-            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-        }
-        .form-input:focus, .form-select:focus {
-            outline: none;
-            border-color: var(--solana-purple);
-            box-shadow: 0 0 0 2px rgba(153, 69, 255, 0.4); /* Purple focus ring */
-        }
-        .form-input.input-error, .form-select.input-error { /* Added for select too */
-             border-color: #e53e3e; /* red-600 */
-        }
-        .form-input.input-error:focus, .form-select.input-error:focus {
-            border-color: #c53030; /* red-700 */
-            box-shadow: 0 0 0 2px rgba(229, 62, 62, 0.3);
-        }
-        .form-select {
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23a0aec0'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 0.75rem center;
-            background-size: 1.25em;
-        }
-        .form-input::placeholder {
-            color: var(--text-secondary);
-            opacity: 0.7;
-        }
-        .form-input:disabled, .form-select:disabled {
-            background-color: var(--solana-grey);
-            color: var(--text-secondary);
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
+    /* helper classes for your custom Tailwind-like names */
+    .bg-card-bg {
+      background-color: var(--card-bg) !important;
+    }
+    .text-text-secondary {
+      color: var(--text-secondary) !important;
+    }
 
+    /* selection */
+    ::selection { background: var(--solana-green); color: var(--body-bg); }
+    ::-moz-selection { background: var(--solana-green); color: var(--body-bg); }
 
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0.75rem 1.5rem; 
-            font-weight: 600; 
-            border-radius: 0.5rem; 
-            transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, transform 0.1s ease-in-out;
-            cursor: pointer;
-            border: none;
-            text-decoration: none;
-        }
-        .btn:active {
-            transform: translateY(1px);
-        }
-        .btn-primary { /* Solana Green */
-            background-color: var(--solana-green);
-            color: var(--solana-black);
-            box-shadow: 0 4px 14px -1px rgba(20, 241, 149, 0.25);
-        }
-        .btn-primary:hover {
-            background-color: var(--solana-dark-green);
-            box-shadow: 0 6px 18px -2px rgba(20, 241, 149, 0.3);
-        }
-        .btn-secondary { /* Solana Purple */
-            background-color: var(--solana-purple);
-            color: white;
-            box-shadow: 0 4px 14px -1px rgba(153, 69, 255, 0.25);
-        }
-        .btn-secondary:hover {
-            background-color: var(--solana-dark-purple);
-            box-shadow: 0 6px 18px -2px rgba(153, 69, 255, 0.3);
-        }
-        .btn-outline { /* Purple outline */
-            background-color: transparent;
-            color: var(--solana-purple);
-            border: 1px solid var(--solana-purple);
-        }
-        .btn-outline:hover {
-            background-color: rgba(153, 69, 255, 0.1); /* Light purple bg on hover */
-            color: var(--solana-green);
-            border-color: var(--solana-green);
-        }
-        .btn-subtle {
-            background-color: var(--solana-light-grey);
-            color: var(--text-secondary);
-        }
-        .btn-subtle:hover {
-            background-color: var(--solana-grey);
-            color: var(--text-primary);
-        }
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            box-shadow: none;
-        }
-        .break-all { word-break: break-all; }
-    </style>
+    /* tooltip */
+    .tooltip { position: relative; display: inline-block; }
+    .tooltip .tooltiptext {
+      visibility: hidden;
+      width: 140px;
+      background-color: var(--solana-light-grey);
+      color: var(--text-primary);
+      text-align: center;
+      border-radius: 6px;
+      padding: 5px 0;
+      position: absolute;
+      z-index: 10;
+      bottom: 125%;
+      left: 50%;
+      margin-left: -70px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      font-size: 0.75rem;
+    }
+    .tooltip .tooltiptext::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      margin-left: -5px;
+      border-width: 5px;
+      border-style: solid;
+      border-color: var(--solana-light-grey) transparent transparent transparent;
+    }
+    .tooltip:hover .tooltiptext { visibility: visible; opacity: 1; }
+
+    /* scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--solana-grey); }
+    ::-webkit-scrollbar-thumb {
+      background: var(--solana-purple);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover { background: var(--solana-dark-purple); }
+
+    /* modal */
+    .modal { display: none; position: fixed; z-index:1000;
+      left:0; top:0; width:100%; height:100%; overflow:auto;
+      background-color: rgba(0,0,0,0.7);
+    }
+    .modal-content {
+      background-color: var(--card-bg);
+      color: var(--text-primary);
+      margin: 15% auto; padding:25px;
+      border:1px solid var(--solana-light-grey);
+      width:90%; max-width:450px; border-radius:12px;
+      text-align:center;
+      box-shadow:0 10px 25px -5px rgba(0,0,0,0.3),
+                 0 10px 10px -5px rgba(0,0,0,0.2);
+    }
+    .modal-close-button {
+      color: var(--text-secondary);
+      float: right; font-size:28px; font-weight:bold; line-height:1;
+    }
+    .modal-close-button:hover,
+    .modal-close-button:focus {
+      color: var(--solana-green);
+      text-decoration:none; cursor:pointer;
+    }
+
+    .input-error-text {
+      color:#e53e3e; font-size:0.875rem; margin-top:0.25rem;
+    }
+
+    /* form inputs */
+    .form-input, .form-select {
+      width:100%; padding:0.75rem 1rem;
+      background-color: var(--solana-light-grey);
+      border:1px solid var(--solana-grey);
+      border-radius:0.5rem;
+      color: var(--text-primary);
+      transition:border-color .2s, box-shadow .2s;
+    }
+    .form-input:focus, .form-select:focus {
+      outline:none;
+      border-color: var(--solana-purple);
+      box-shadow:0 0 0 2px rgba(153,69,255,0.4);
+    }
+    .form-input.input-error, .form-select.input-error {
+      border-color:#e53e3e;
+    }
+    .form-input.input-error:focus, .form-select.input-error:focus {
+      border-color:#c53030;
+      box-shadow:0 0 0 2px rgba(229,62,62,0.3);
+    }
+    .form-select {
+      appearance:none;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23a0aec0'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E");
+      background-repeat:no-repeat;
+      background-position:right 0.75rem center;
+      background-size:1.25em;
+    }
+    .form-input::placeholder { color: var(--text-secondary); opacity:0.7; }
+    .form-input:disabled, .form-select:disabled {
+      background-color: var(--solana-grey);
+      color: var(--text-secondary);
+      cursor:not-allowed; opacity:0.7;
+    }
+
+    /* buttons */
+    .btn {
+      display:inline-flex; align-items:center; justify-content:center;
+      padding:0.75rem 1.5rem; font-weight:600; border-radius:0.5rem;
+      transition:background-color .2s, box-shadow .2s, transform .1s;
+      cursor:pointer; border:none; text-decoration:none;
+    }
+    .btn:active { transform:translateY(1px); }
+    .btn-primary {
+      background-color: var(--solana-green);
+      color:            var(--solana-black, #000);
+      box-shadow:       0 4px 14px -1px rgba(20,241,149,0.25);
+    }
+    .btn-primary:hover {
+      background-color: var(--solana-dark-green);
+      box-shadow:       0 6px 18px -2px rgba(20,241,149,0.3);
+    }
+    .btn-secondary {
+      background-color: var(--solana-purple);
+      color:            #fff;
+      box-shadow:       0 4px 14px -1px rgba(153,69,255,0.25);
+    }
+    .btn-secondary:hover {
+      background-color: var(--solana-dark-purple);
+      box-shadow:       0 6px 18px -2px rgba(153,69,255,0.3);
+    }
+    .btn-outline {
+      background-color: transparent;
+      color:            var(--solana-purple);
+      border:           1px solid var(--solana-purple);
+    }
+    .btn-outline:hover {
+      background-color: rgba(153,69,255,0.1);
+      color:            var(--solana-green);
+      border-color:     var(--solana-green);
+    }
+    .btn-subtle {
+      background-color: var(--solana-light-grey);
+      color:            var(--text-secondary);
+    }
+    .btn-subtle:hover {
+      background-color: var(--solana-grey);
+      color:            var(--text-primary);
+    }
+    .btn:disabled {
+      opacity:0.5; cursor:not-allowed; box-shadow:none;
+    }
+
+    .break-all { word-break: break-all; }
+  </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4">
+    <header class="text-center mb-8">
+        <img src="public/Logo.png"
+             alt="solpay.cash logo"
+             class="mx-auto h-16 w-auto mb-4">
+        <h1 class="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-solana-purple to-solana-green">
+          solpay.cash
+        </h1>
+        <p class="text-text-secondary mt-2">Simple stablecoin payments on Solana.</p>
+      </header>
+      
 
-    <div class="bg-card-bg shadow-xl rounded-xl p-6 md:p-10 w-full max-w-md">
-        <header class="text-center mb-8">
-            <svg class="mx-auto h-16 w-auto mb-4" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <linearGradient id="solanaGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style="stop-color:var(--solana-purple);stop-opacity:1" />
-                        <stop offset="100%" style="stop-color:var(--solana-green);stop-opacity:1" />
-                    </linearGradient>
-                </defs>
-                <circle cx="50" cy="50" r="45" fill="url(#solanaGradient)"/>
-                <text x="50" y="62" font-family="Inter, sans-serif" font-size="30" font-weight="bold" fill="var(--solana-black)" text-anchor="middle">S</text>
-            </svg>
-            <h1 class="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-solana-purple to-solana-green">solpay.cash</h1>
-            <p class="text-text-secondary mt-2">Simple stablecoin payments on Solana.</p>
-        </header>
-
-        <form id="paymentRequestForm" class="space-y-5">
-            <div>
-                <label for="walletAddress" class="block text-sm font-medium text-text-secondary mb-1">Your Solana Wallet (Recipient)</label>
-                <div class="flex space-x-2">
-                    <input type="text" id="walletAddress" name="walletAddress" required
-                           class="form-input flex-grow placeholder-gray-500"
-                           placeholder="Enter or connect recipient wallet...">
-                    <button type="button" id="connectWalletButton" class="btn btn-secondary text-sm px-4">
-                        Connect
-                    </button>
-                </div>
-                <p id="walletAddressError" class="input-error-text" style="display: none;"></p>
-            </div>
-
-            <div>
-                <label for="amount" class="block text-sm font-medium text-text-secondary mb-1">Amount</label>
-                <input type="number" id="amount" name="amount" step="0.000001" min="0.000001" required
-                       class="form-input placeholder-gray-500"
-                       placeholder="e.g., 10.50">
-                <p id="amountError" class="input-error-text" style="display: none;"></p>
-            </div>
-
-            <div>
-                <label for="stablecoin" class="block text-sm font-medium text-text-secondary mb-1">Stablecoin</label>
-                <select id="stablecoin" name="stablecoin" class="form-select">
-                    <option value="USDC">USDC (USD Coin)</option>
-                    <option value="USDT">USDT (Tether)</option>
-                    </select>
-            </div>
-
-            <div>
-                <label for="description" class="block text-sm font-medium text-text-secondary mb-1">Invoice Label / Reference</label>
-                <input type="text" id="description" name="description" required
-                       class="form-input placeholder-gray-500"
-                       placeholder="e.g., Design Services Q2">
-            </div>
-            
-            <div>
-                <label for="message" class="block text-sm font-medium text-text-secondary mb-1">Message (Optional)</label>
-                <input type="text" id="message" name="message"
-                       class="form-input placeholder-gray-500"
-                       placeholder="e.g., Thanks for your business!">
-            </div>
-
-            <button type="submit" id="generateRequestButton" class="btn btn-primary w-full text-base py-3">
-                Generate Payment Request
-            </button>
-        </form>
-
-        <div id="paymentDetails" class="mt-8" style="display: none;">
-            <h2 id="paymentDetailsTitle" class="text-2xl font-semibold text-center text-transparent bg-clip-text bg-gradient-to-r from-solana-purple to-solana-green mb-6">Payment Request</h2>
-            
-            <div class="text-center mb-6">
-                <canvas id="qrCodeCanvas" class="mx-auto border-4 border-solana-grey rounded-lg shadow-md bg-white"></canvas>
-                 <p id="qrCodeError" class="input-error-text mt-2" style="display: none;"></p>
-            </div>
-
-            <div class="space-y-3 bg-solana-grey p-4 rounded-lg border border-solana-light-grey mb-6">
-                <div class="flex justify-between items-center">
-                    <span class="text-sm font-medium text-text-secondary">Recipient:</span>
-                    <span id="displayWallet" class="text-sm text-text-primary font-mono break-all text-right"></span>
-                </div>
-                 <hr class="border-solana-light-grey">
-                <div class="flex justify-between items-center">
-                    <span class="text-sm font-medium text-text-secondary">Total Amount:</span>
-                    <span id="displayAmount" class="text-lg font-semibold text-solana-green"></span>
-                </div>
-                 <hr class="border-solana-light-grey">
-                <div class="flex justify-between items-center">
-                    <span class="text-sm font-medium text-text-secondary">Token:</span>
-                    <span id="displayToken" class="text-sm text-text-primary text-right"></span>
-                </div>
-                 <hr class="border-solana-light-grey">
-                <div class="flex justify-between items-center">
-                    <span class="text-sm font-medium text-text-secondary">Label:</span>
-                    <span id="displayDescription" class="text-sm text-text-primary text-right break-all"></span>
-                </div>
-                <div id="displayMessageContainer" style="display:none;">
-                     <hr class="border-solana-light-grey">
-                    <div class="flex justify-between items-start pt-2">
-                        <span class="text-sm font-medium text-text-secondary">Message:</span>
-                        <span id="displayMessage" class="text-sm text-text-primary text-right break-all"></span>
-                    </div>
-                </div>
-            </div>
-            
-            <button id="payWithWalletButton" style="display:none;"
-                    class="btn btn-primary w-full text-base py-3 mb-4">
-                Connect Wallet & Pay
-            </button>
-
-            <div id="sharingOptions" class="mt-4 space-y-3">
-                 <p class="text-xs text-text-secondary text-center mb-2">Or share these details:</p>
-                <div class="relative">
-                     <input type="text" id="solanaPayUrl" readonly class="form-input text-xs pr-24 truncate" title="Solana Pay URI">
-                     <button onclick="copyToClipboard('solanaPayUrl', 'tooltipSolanaPayUrl')"
-                             class="absolute right-1 top-1/2 transform -translate-y-1/2 btn btn-outline text-xs px-2 py-1 tooltip">
-                         Copy URI
-                         <span class="tooltiptext" id="tooltipSolanaPayUrl">Copy Solana Pay URI</span>
-                     </button>
-                </div>
-                <div class="relative">
-                     <input type="text" id="walletAddressCopy" readonly class="form-input text-xs pr-24 truncate" title="Recipient Wallet Address">
-                     <button onclick="copyToClipboard('walletAddressCopy', 'tooltipWalletAddressCopy')"
-                             class="absolute right-1 top-1/2 transform -translate-y-1/2 btn btn-outline text-xs px-2 py-1 tooltip">
-                         Copy Addr
-                         <span class="tooltiptext" id="tooltipWalletAddressCopy">Copy Wallet Address</span>
-                     </button>
-                </div>
-                 <div class="relative">
-                     <input type="text" id="shareableLink" readonly class="form-input text-xs pr-24 truncate" title="Shareable Payment Link">
-                     <button onclick="copyToClipboard('shareableLink', 'tooltipShareableLink')"
-                             class="absolute right-1 top-1/2 transform -translate-y-1/2 btn btn-outline text-xs px-2 py-1 tooltip">
-                         Share Link
-                         <span class="tooltiptext" id="tooltipShareableLink">Copy Shareable Link</span>
-                     </button>
-                </div>
-            </div>
-             <button id="createNewRequestButton" onclick="resetForm()" class="mt-6 w-full btn btn-subtle text-base py-2.5">
-                Create New Request
-            </button>
+    <form id="paymentRequestForm" class="space-y-5">
+      <div>
+        <label for="walletAddress"
+               class="block text-sm font-medium text-text-secondary mb-1">
+          Your Solana Wallet (Recipient)
+        </label>
+        <div class="flex space-x-2">
+          <input type="text" id="walletAddress" name="walletAddress" required
+                 class="form-input flex-grow placeholder-gray-500"
+                 placeholder="Enter or connect recipient wallet...">
+          <button type="button" id="connectWalletButton"
+                  class="btn btn-secondary text-sm px-4">
+            Connect
+          </button>
         </div>
-    </div>
-
-    <div id="notificationModal" class="modal">
-      <div class="modal-content">
-        <span class="modal-close-button" onclick="closeModal()">&times;</span>
-        <p id="notificationMessage" class="text-md leading-relaxed"></p>
+        <p id="walletAddressError" class="input-error-text" style="display:none;"></p>
       </div>
+      <div>
+        <label for="amount"
+               class="block text-sm font-medium text-text-secondary mb-1">
+          Amount
+        </label>
+        <input type="number" id="amount" name="amount"
+               step="0.000001" min="0.000001" required
+               class="form-input placeholder-gray-500"
+               placeholder="e.g., 10.50">
+        <p id="amountError" class="input-error-text" style="display:none;"></p>
+      </div>
+      <div>
+        <label for="stablecoin"
+               class="block text-sm font-medium text-text-secondary mb-1">
+          Stablecoin
+        </label>
+        <select id="stablecoin" name="stablecoin" class="form-select">
+          <option value="USDC">USDC (USD Coin)</option>
+          <option value="USDT">USDT (Tether)</option>
+        </select>
+      </div>
+      <div>
+        <label for="description"
+               class="block text-sm font-medium text-text-secondary mb-1">
+          Invoice Label / Reference
+        </label>
+        <input type="text" id="description" name="description" required
+               class="form-input placeholder-gray-500"
+               placeholder="e.g., Design Services Q2">
+      </div>
+      <div>
+        <label for="message"
+               class="block text-sm font-medium text-text-secondary mb-1">
+          Message (Optional)
+        </label>
+        <input type="text" id="message" name="message"
+               class="form-input placeholder-gray-500"
+               placeholder="e.g., Thanks for your business!">
+      </div>
+      <button type="submit" id="generateRequestButton"
+              class="btn btn-primary w-full text-base py-3">
+        Generate Payment Request
+      </button>
+    </form>
+
+    <div id="paymentDetails" class="mt-8" style="display:none;">
+      <h2 id="paymentDetailsTitle"
+          class="text-2xl font-semibold text-center text-transparent
+                 bg-clip-text bg-gradient-to-r from-solana-purple to-solana-green mb-6">
+        Payment Request
+      </h2>
+      <div class="text-center mb-6">
+        <canvas id="qrCodeCanvas"
+                class="mx-auto border-4 border-solana-grey rounded-lg shadow-md bg-white">
+        </canvas>
+        <p id="qrCodeError" class="input-error-text mt-2" style="display:none;"></p>
+      </div>
+      <div class="space-y-3 bg-solana-grey p-4 rounded-lg
+                  border border-solana-light-grey mb-6">
+        <div class="flex justify-between items-center">
+          <span class="text-sm font-medium text-text-secondary">Recipient:</span>
+          <span id="displayWallet"
+                class="text-sm text-text-primary font-mono break-all text-right">
+          </span>
+        </div>
+        <hr class="border-solana-light-grey">
+        <div class="flex justify-between items-center">
+          <span class="text-sm font-medium text-text-secondary">Total Amount:</span>
+          <span id="displayAmount"
+                class="text-lg font-semibold text-solana-green">
+          </span>
+        </div>
+        <hr class="border-solana-light-grey">
+        <div class="flex justify-between items-center">
+          <span class="text-sm font-medium text-text-secondary">Token:</span>
+          <span id="displayToken"
+                class="text-sm text-text-primary text-right">
+          </span>
+        </div>
+        <hr class="border-solana-light-grey">
+        <div class="flex justify-between items-center">
+          <span class="text-sm font-medium text-text-secondary">Label:</span>
+          <span id="displayDescription"
+                class="text-sm text-text-primary text-right break-all">
+          </span>
+        </div>
+        <div id="displayMessageContainer" style="display:none;">
+          <hr class="border-solana-light-grey">
+          <div class="flex justify-between items-start pt-2">
+            <span class="text-sm font-medium text-text-secondary">Message:</span>
+            <span id="displayMessage"
+                  class="text-sm text-text-primary text-right break-all">
+            </span>
+          </div>
+        </div>
+      </div>
+      <button id="payWithWalletButton" style="display:none;"
+              class="btn btn-primary w-full text-base py-3 mb-4">
+        Connect Wallet &amp; Pay
+      </button>
+      <div id="sharingOptions" class="mt-4 space-y-3">
+        <p class="text-xs text-text-secondary text-center mb-2">
+          Or share these details:
+        </p>
+        <div class="relative">
+          <input type="text" id="solanaPayUrl" readonly
+                 class="form-input text-xs pr-24 truncate"
+                 title="Solana Pay URI">
+          <button onclick="copyToClipboard('solanaPayUrl','tooltipSolanaPayUrl')"
+                  class="absolute right-1 top-1/2 transform -translate-y-1/2
+                         btn btn-outline text-xs px-2 py-1 tooltip">
+            Copy URI
+            <span class="tooltiptext" id="tooltipSolanaPayUrl">
+              Copy Solana Pay URI
+            </span>
+          </button>
+        </div>
+        <div class="relative">
+          <input type="text" id="walletAddressCopy" readonly
+                 class="form-input text-xs pr-24 truncate"
+                 title="Recipient Wallet Address">
+          <button onclick="copyToClipboard('walletAddressCopy','tooltipWalletAddressCopy')"
+                  class="absolute right-1 top-1/2 transform -translate-y-1/2
+                         btn btn-outline text-xs px-2 py-1 tooltip">
+            Copy Addr
+            <span class="tooltiptext" id="tooltipWalletAddressCopy">
+              Copy Wallet Address
+            </span>
+          </button>
+        </div>
+        <div class="relative">
+          <input type="text" id="shareableLink" readonly
+                 class="form-input text-xs pr-24 truncate"
+                 title="Shareable Payment Link">
+          <button onclick="copyToClipboard('shareableLink','tooltipShareableLink')"
+                  class="absolute right-1 top-1/2 transform -translate-y-1/2
+                         btn btn-outline text-xs px-2 py-1 tooltip">
+            Share Link
+            <span class="tooltiptext" id="tooltipShareableLink">
+              Copy Shareable Link
+            </span>
+          </button>
+        </div>
+      </div>
+      <button id="createNewRequestButton" onclick="resetForm()"
+              class="mt-6 w-full btn btn-subtle text-base py-2.5">
+        Create New Request
+      </button>
     </div>
+  </div>
 
-    <footer class="text-center text-text-secondary mt-10 pb-6 text-xs">
-        <p>Powered by Solana. Use responsibly.</p>
-        <p>&copy; 2024-2025 solpay.cash - Transactions are peer-to-peer and handled by your wallet.</p>
-    </footer>
+  <div id="notificationModal" class="modal">
+    <div class="modal-content">
+      <span class="modal-close-button" onclick="closeModal()">&times;</span>
+      <p id="notificationMessage" class="text-md leading-relaxed"></p>
+    </div>
+  </div>
 
-    <script>
-        // Solana SPL Token Mint Addresses (Mainnet-beta)
-        const STABLECOIN_MINTS = {
-            "USDC": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
-            "USDT": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"
-            // For testing on Devnet, you would use different mint addresses:
-            // "USDC_DEVNET": "Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr" 
-        };
-        const SOLANA_RPC_URL = solanaWeb3.clusterApiUrl('mainnet-beta'); // or 'devnet' for testing
+  <footer class="text-center text-text-secondary mt-10 pb-6 text-xs">
+    <p>Powered by Solana. Use responsibly.</p>
+    <p>&copy; 2024–2025 solpay.cash – peer‑to‑peer payments handled by your wallet.</p>
+  </footer>
 
-        // DOM Elements
-        const paymentRequestForm = document.getElementById('paymentRequestForm');
-        const paymentDetailsDiv = document.getElementById('paymentDetails');
-        const paymentDetailsTitle = document.getElementById('paymentDetailsTitle');
-        const qrCodeCanvas = document.getElementById('qrCodeCanvas');
-        const qrCodeErrorEl = document.getElementById('qrCodeError');
-        
-        const walletAddressInput = document.getElementById('walletAddress');
-        const walletAddressError = document.getElementById('walletAddressError');
-        const amountInput = document.getElementById('amount');
-        const amountError = document.getElementById('amountError');
-        const stablecoinSelect = document.getElementById('stablecoin');
-        const descriptionInput = document.getElementById('description');
-        const messageInput = document.getElementById('message');
-        
-        const connectWalletButton = document.getElementById('connectWalletButton'); // For requestor
-        const generateRequestButton = document.getElementById('generateRequestButton');
-        const payWithWalletButton = document.getElementById('payWithWalletButton'); // For payer
-        const createNewRequestButton = document.getElementById('createNewRequestButton');
-        const sharingOptionsDiv = document.getElementById('sharingOptions');
-        
-        const notificationModal = document.getElementById('notificationModal');
-        const notificationMessage = document.getElementById('notificationMessage');
-        const modalCloseButton = document.querySelector('.modal-close-button');
+  <script>
+    // Solana SPL Token Mints
+    const STABLECOIN_MINTS = {
+      "USDC": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "USDT": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB"
+    };
+    const SOLANA_RPC_URL = solanaWeb3.clusterApiUrl('mainnet-beta');
 
-        let isPayerView = false; 
-        let payerPublicKey = null; // Store payer's public key after connection
-        let solanaConnection = null; // Store Solana connection object
+    // DOM refs
+    const paymentRequestForm  = document.getElementById('paymentRequestForm');
+    const paymentDetailsDiv   = document.getElementById('paymentDetails');
+    const paymentDetailsTitle = document.getElementById('paymentDetailsTitle');
+    const qrCodeCanvas        = document.getElementById('qrCodeCanvas');
+    const qrCodeErrorEl       = document.getElementById('qrCodeError');
+    const walletAddressInput  = document.getElementById('walletAddress');
+    const walletAddressError  = document.getElementById('walletAddressError');
+    const amountInput         = document.getElementById('amount');
+    const amountError         = document.getElementById('amountError');
+    const stablecoinSelect    = document.getElementById('stablecoin');
+    const descriptionInput    = document.getElementById('description');
+    const messageInput        = document.getElementById('message');
+    const connectWalletButton = document.getElementById('connectWalletButton');
+    const payWithWalletButton = document.getElementById('payWithWalletButton');
+    const createNewRequestButton = document.getElementById('createNewRequestButton');
+    const sharingOptionsDiv   = document.getElementById('sharingOptions');
+    const notificationModal   = document.getElementById('notificationModal');
+    const notificationMessage = document.getElementById('notificationMessage');
+    const modalCloseButton    = document.querySelector('.modal-close-button');
 
-        // --- Modal Functions ---
-        function showModal(message, isSticky = false) {
-            notificationMessage.innerHTML = message; 
-            notificationModal.style.display = "block";
-            // If not sticky, auto-close after a few seconds for non-critical messages
-            if (!isSticky) {
-                setTimeout(closeModal, 4000);
-            }
+    let isPayerView   = false,
+        payerPublicKey= null,
+        solanaConnection = null;
+
+    // modal helpers
+    function showModal(msg, sticky=false) {
+      notificationMessage.innerHTML = msg;
+      notificationModal.style.display = 'block';
+      if (!sticky) setTimeout(closeModal, 4000);
+    }
+    function closeModal() {
+      notificationModal.style.display = 'none';
+    }
+    window.onclick = e => { if (e.target===notificationModal) closeModal(); };
+    if (modalCloseButton) modalCloseButton.onclick = closeModal;
+
+    // wallet validation
+    function validateWalletRealtime() {
+      const v = walletAddressInput.value;
+      if (!v && !isPayerView) {
+        walletAddressError.style.display='none';
+        walletAddressInput.classList.remove('input-error');
+        return true;
+      }
+      if (!/^[1-9A-HJ-NP-Za-km-z]{0,44}$/.test(v)) {
+        walletAddressError.textContent='Invalid Base58.';
+        walletAddressError.style.display='block';
+        walletAddressInput.classList.add('input-error');
+        return false;
+      }
+      if (v.length && (v.length<32||v.length>44)) {
+        walletAddressError.textContent='32–44 chars.';
+        walletAddressError.style.display='block';
+        walletAddressInput.classList.add('input-error');
+        return false;
+      }
+      walletAddressError.style.display='none';
+      walletAddressInput.classList.remove('input-error');
+      return true;
+    }
+    function isWalletValid(w){ return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(w); }
+    walletAddressInput.addEventListener('input', validateWalletRealtime);
+
+    // amount validation
+    function validateAmount(){
+      const a = parseFloat(amountInput.value);
+      if (isNaN(a)||a<=0){
+        amountError.textContent='Must be positive.';
+        amountError.style.display='block';
+        amountInput.classList.add('input-error');
+        return false;
+      }
+      if (amountInput.value.includes('.') && amountInput.value.split('.')[1].length>6){
+        amountError.textContent='Max 6 decimals.';
+        amountError.style.display='block';
+        amountInput.classList.add('input-error');
+        return false;
+      }
+      amountError.style.display='none';
+      amountInput.classList.remove('input-error');
+      return true;
+    }
+    amountInput.addEventListener('input', validateAmount);
+
+    // connect requestor
+    async function connectRequestorWallet(){
+      if (!window.solana||!window.solana.connect){
+        showModal("Install a Solana wallet first.",true);
+        return;
+      }
+      try {
+        const resp = await window.solana.connect();
+        const pk = resp.publicKey.toString();
+        walletAddressInput.value=pk;
+        validateWalletRealtime();
+        showModal(`Connected: ${pk.substr(0,6)}…${pk.substr(-6)}`);
+      } catch(e){
+        console.error(e);
+        showModal("Connection failed.",true);
+      }
+    }
+    connectWalletButton.addEventListener('click', connectRequestorWallet);
+
+    // on load: check URL for payer view
+    function initializeSolanaConnection(){
+      if (!solanaConnection){
+        solanaConnection=new solanaWeb3.Connection(SOLANA_RPC_URL,'confirmed');
+      }
+    }
+    function loadFromURLParams(){
+      const p=new URLSearchParams(window.location.search);
+      const w=p.get('wallet'), a=p.get('amount'),
+            t=p.get('token'), l=p.get('label'), m=p.get('message');
+      if (w&&a&&t&&l){
+        isPayerView=true;
+        initializeSolanaConnection();
+        walletAddressInput.value=w;
+        amountInput.value=a;
+        for(const s in STABLECOIN_MINTS){
+          if(STABLECOIN_MINTS[s]===t){ stablecoinSelect.value=s; break; }
         }
-        function closeModal() {
-            notificationModal.style.display = "none";
+        descriptionInput.value=decodeURIComponent(l);
+        if(m) messageInput.value=decodeURIComponent(m);
+        generatePaymentRequest(true);
+      }
+    }
+    window.onload = () => {
+      if(!window.QRious){
+        showModal("QR library not loaded.",true);
+        qrCodeErrorEl.textContent="QR unavailable."; qrCodeErrorEl.style.display='block';
+      }
+      if(!window.solanaWeb3){
+        showModal("Solana Web3 failed to load.",true);
+      }
+      loadFromURLParams();
+    };
+
+    // form submit
+    paymentRequestForm.addEventListener('submit', e=>{
+      e.preventDefault();
+      generatePaymentRequest(false);
+    });
+
+    async function generatePaymentRequest(isFromURL=false){
+      const rec=walletAddressInput.value.trim(),
+            amt=amountInput.value,
+            sym=stablecoinSelect.value,
+            desc=descriptionInput.value.trim(),
+            msg=messageInput.value.trim();
+      let ok=true;
+      if(!isWalletValid(rec)){
+        walletAddressError.textContent='Invalid wallet.';
+        walletAddressError.style.display='block';
+        walletAddressInput.classList.add('input-error');
+        ok=false;
+      } else {
+        walletAddressError.style.display='none';
+        walletAddressInput.classList.remove('input-error');
+      }
+      if(!validateAmount()) ok=false;
+      if(!desc && !isPayerView){
+        showModal("Label required.",true);
+        ok=false;
+      }
+      if(!ok && !isFromURL){
+        showModal("Fix errors.",true);
+        return;
+      }
+      const mint=STABLECOIN_MINTS[sym];
+      let payUrl=`solana:${rec}?amount=${amt}&spl-token=${mint}&label=${encodeURIComponent(desc)}`;
+      if(msg) payUrl+=`&message=${encodeURIComponent(msg)}`;
+
+      document.getElementById('displayWallet').textContent=rec;
+      document.getElementById('displayAmount').textContent=
+        `${parseFloat(amt).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:6})} ${sym}`;
+      document.getElementById('displayToken').textContent=
+        `${sym} (${mint.substr(0,4)}…${mint.substr(-4)})`;
+      document.getElementById('displayDescription').textContent=desc;
+      const msgCont=document.getElementById('displayMessageContainer'),
+            msgEl=document.getElementById('displayMessage');
+      if(msg){ msgEl.textContent=msg; msgCont.style.display='block'; }
+      else msgCont.style.display='none';
+
+      document.getElementById('solanaPayUrl').value=payUrl;
+      document.getElementById('walletAddressCopy').value=rec;
+
+      // ** QR generation with real hex color **
+      qrCodeErrorEl.style.display='none';
+      if(window.QRious){
+        try {
+          const fg = getComputedStyle(document.documentElement)
+                        .getPropertyValue('--text-primary').trim() || '#FFFFFF';
+          new QRious({
+            element: qrCodeCanvas,
+            value: payUrl,
+            size: 192,
+            padding: 8,
+            level: 'H',
+            background: '#FFFFFF',
+            foreground: fg
+          });
+          qrCodeCanvas.style.display='block';
+        } catch(e){
+          console.error(e);
+          qrCodeCanvas.style.display='none';
+          qrCodeErrorEl.textContent="Failed to generate QR.";
+          qrCodeErrorEl.style.display='block';
+          if(!isPayerView) showModal("Could not generate QR.",true);
         }
-        window.onclick = function(event) {
-            if (event.target == notificationModal) {
-                closeModal();
-            }
+      } else {
+        qrCodeCanvas.style.display='none';
+        qrCodeErrorEl.textContent="QR lib not loaded.";
+        qrCodeErrorEl.style.display='block';
+      }
+
+      // share link
+      const params=new URLSearchParams({wallet:rec,amount:amt,token:mint,label:desc});
+      if(msg) params.set('message',msg);
+      document.getElementById('shareableLink').value=
+        `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+
+      // UI toggle
+      paymentRequestForm.style.display='none';
+      paymentDetailsDiv.style.display='block';
+
+      if(isPayerView){
+        paymentDetailsTitle.textContent="Confirm & Pay";
+        [walletAddressInput,amountInput,stablecoinSelect,descriptionInput,messageInput]
+          .forEach(i=>i.disabled=true);
+        connectWalletButton.style.display='none';
+        payWithWalletButton.style.display='block';
+        payWithWalletButton.textContent = payerPublicKey?'Confirm & Pay':'Connect Wallet & Pay';
+        payWithWalletButton.onclick = connectAndExecutePayment;
+        sharingOptionsDiv.style.display='none';
+        createNewRequestButton.textContent='Back to Create Request';
+      } else {
+        paymentDetailsTitle.textContent="Payment Request Generated";
+        payWithWalletButton.style.display='none';
+        sharingOptionsDiv.style.display='block';
+        createNewRequestButton.textContent='Create New Request';
+      }
+    }
+
+    // payer: connect & send
+    async function connectAndExecutePayment(){
+      if(!window.solana||!window.solana.connect){
+        showModal("Wallet not detected.",true);
+        return;
+      }
+      initializeSolanaConnection();
+      try {
+        if(!window.solana.isConnected||!payerPublicKey){
+          showModal("Connecting wallet...",true);
+          const resp=await window.solana.connect({onlyIfTrusted:false});
+          payerPublicKey=resp.publicKey;
+          showModal(`Connected: ${payerPublicKey.toBase58().substr(0,6)}…`,false);
         }
-        if(modalCloseButton) modalCloseButton.onclick = closeModal;
+        await processPaymentTransaction();
+      } catch(err){
+        console.error(err);
+        showModal(`Payment failed: ${err.message||err}`,true);
+        payerPublicKey=null;
+      }
+    }
 
-        // --- Solana Connection Initialization ---
-        function initializeSolanaConnection() {
-            if (!solanaConnection) {
-                try {
-                    solanaConnection = new solanaWeb3.Connection(SOLANA_RPC_URL, 'confirmed');
-                    console.log("Solana connection initialized to:", SOLANA_RPC_URL);
-                } catch (error) {
-                    console.error("Failed to initialize Solana connection:", error);
-                    showModal("Error: Could not connect to Solana network. Please refresh.", true);
-                }
-            }
-        }
-        
-        // --- Wallet Address Validation ---
-        function validateWalletAddressRealtime() {
-            const value = walletAddressInput.value;
-            if (!value && !isPayerView) { // Don't clear error in payer view if prefilled
-                walletAddressError.style.display = 'none';
-                walletAddressInput.classList.remove('input-error');
-                return true; 
-            }
-            // Basic Base58 check (not exhaustive, but good for realtime feedback)
-            if (!/^[1-9A-HJ-NP-Za-km-z]{0,44}$/.test(value)) {
-                walletAddressError.textContent = 'Invalid characters. Only Base58 allowed.';
-                walletAddressError.style.display = 'block';
-                walletAddressInput.classList.add('input-error');
-                return false;
-            } else if (value.length > 0 && (value.length < 32 || value.length > 44)) {
-                 walletAddressError.textContent = 'Address must be 32-44 characters.';
-                 walletAddressError.style.display = 'block';
-                 walletAddressInput.classList.add('input-error');
-                 return false; 
-            } else {
-                walletAddressError.style.display = 'none';
-                walletAddressInput.classList.remove('input-error');
-                return true;
-            }
-        }
+    async function processPaymentTransaction(){
+      const recAddr=walletAddressInput.value;
+      const amtStr=amountInput.value;
+      const sym=stablecoinSelect.value;
+      const mint=STABLECOIN_MINTS[sym];
+      if(!recAddr||!amtStr||!mint){
+        showModal("Incomplete payment details.",true);
+        return;
+      }
+      const amt=parseFloat(amtStr);
+      payWithWalletButton.disabled=true;
+      payWithWalletButton.textContent='Processing...';
+      showModal("Preparing transaction…",true);
 
-        function isWalletAddressFormatValid(address) {
-            // More robust check for final validation
-            return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address);
-        }
-        
-        if(walletAddressInput) walletAddressInput.addEventListener('input', validateWalletAddressRealtime);
+      try {
+        const recipientPK=new solanaWeb3.PublicKey(recAddr),
+              mintPK=new solanaWeb3.PublicKey(mint);
+        let decimals=6;
+        try {
+          const info=await solanaConnection.getParsedAccountInfo(mintPK);
+          if(info.value?.data?.parsed?.info?.decimals!=null)
+            decimals=info.value.data.parsed.info.decimals;
+        } catch{}
+        const amountUnits=Math.round(amt*Math.pow(10,decimals));
+        const payerTokenAddr    = await solanaWeb3.getAssociatedTokenAddress(mintPK,payerPublicKey);
+        const recipientTokenAddr= await solanaWeb3.getAssociatedTokenAddress(mintPK,recipientPK);
+        const tx=new solanaWeb3.Transaction();
+        tx.add(solanaWeb3.createTransferInstruction(
+          payerTokenAddr, recipientTokenAddr, payerPublicKey, amountUnits
+        ));
+        tx.feePayer=payerPublicKey;
+        const latest=await solanaConnection.getLatestBlockhash();
+        tx.recentBlockhash=latest.blockhash;
 
-        // --- Amount Validation ---
-        function validateAmount() {
-            const amount = parseFloat(amountInput.value);
-            if (isNaN(amount) || amount <= 0) {
-                amountError.textContent = 'Amount must be a positive number.';
-                amountError.style.display = 'block';
-                amountInput.classList.add('input-error');
-                return false;
-            }
-            // Check for too many decimal places (more than 6 for typical stablecoins)
-            if (amountInput.value.includes('.') && amountInput.value.split('.')[1].length > 6) {
-                amountError.textContent = 'Max 6 decimal places allowed.';
-                amountError.style.display = 'block';
-                amountInput.classList.add('input-error');
-                return false;
-            }
-            amountError.style.display = 'none';
-            amountInput.classList.remove('input-error');
-            return true;
-        }
-        if(amountInput) amountInput.addEventListener('input', validateAmount);
+        const signed=await window.solana.signTransaction(tx);
+        const sig=await solanaConnection.sendRawTransaction(signed.serialize());
+        showModal(`Submitted! Sig: ${sig.substr(0,10)}…`,true);
+        const conf=await solanaConnection.confirmTransaction({
+          signature: sig,
+          blockhash: tx.recentBlockhash,
+          lastValidBlockHeight: latest.lastValidBlockHeight
+        },'confirmed');
+        if(conf.value.err) throw new Error(JSON.stringify(conf.value.err));
+        showModal(
+          `Success! <a href="https://solscan.io/tx/${sig}?cluster=mainnet-beta" target="_blank"
+            class="text-solana-green hover:underline">
+            View on Solscan
+          </a>`,true
+        );
+        payWithWalletButton.textContent='Payment Sent!';
+      } catch(error){
+        console.error(error);
+        showModal(`Error: ${error.message||error}`,true);
+        payWithWalletButton.disabled=false;
+        payWithWalletButton.textContent='Try Payment Again';
+      }
+    }
 
-        // --- Connect Wallet (Requestor/Freelancer) ---
-        async function connectRequestorWallet() {
-            if (typeof window.solana === 'undefined' || typeof window.solana.connect === 'undefined') {
-                 showModal("Solana wallet (e.g., Phantom, Solflare) not detected. Please install one or enter address manually.", true);
-                 return;
-            }
-            try {
-                const resp = await window.solana.connect();
-                const publicKeyStr = resp.publicKey.toString();
-                walletAddressInput.value = publicKeyStr;
-                validateWalletAddressRealtime(); 
-                showModal(`Wallet connected successfully!<br><small class="text-text-secondary">Address: ${publicKeyStr.substring(0,6)}...${publicKeyStr.substring(publicKeyStr.length - 6)}</small>`);
-            } catch (err) {
-                console.error("Requestor wallet connection failed:", err);
-                showModal(`Wallet connection failed: <br><small class="text-text-secondary">${err.message || 'Please ensure your wallet is unlocked and try again.'}</small>`, true);
-            }
-        }
-        if(connectWalletButton) connectWalletButton.addEventListener('click', connectRequestorWallet);
+    // clipboard
+    function copyToClipboard(id, tipId){
+      const inp=document.getElementById(id);
+      inp.select();
+      inp.setSelectionRange(0,99999);
+      navigator.clipboard.writeText(inp.value)
+        .then(()=>showModal('Copied!'))
+        .catch(()=>showModal('Copy failed.',true));
+    }
 
-        // --- Load from URL Parameters (Payer View) ---
-        function loadFromURLParams() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const wallet = urlParams.get('wallet');
-            const amount = urlParams.get('amount');
-            const tokenMint = urlParams.get('token'); // This is the mint address
-            const label = urlParams.get('label');
-            const msg = urlParams.get('message');
-
-            if (wallet && amount && tokenMint && label) {
-                isPayerView = true;
-                initializeSolanaConnection(); // Initialize connection for payer
-
-                walletAddressInput.value = wallet;
-                amountInput.value = amount;
-                
-                // Find and select the stablecoin by its mint address
-                let tokenSymbolFound = null;
-                for (const symbol in STABLECOIN_MINTS) {
-                    if (STABLECOIN_MINTS[symbol] === tokenMint) {
-                        tokenSymbolFound = symbol;
-                        break;
-                    }
-                }
-                if (tokenSymbolFound) {
-                    stablecoinSelect.value = tokenSymbolFound;
-                } else {
-                    // Handle unknown token mint - maybe add a custom option or show error
-                    console.warn("Unknown token mint in URL:", tokenMint);
-                    showModal("Warning: The token in the payment link is not recognized by this app. Proceed with caution.", true);
-                    // Potentially add an option dynamically if you want to support any SPL token
-                }
-
-                descriptionInput.value = decodeURIComponent(label);
-                if (msg) {
-                    messageInput.value = decodeURIComponent(msg);
-                }
-                // Automatically trigger display of payment details for payer
-                generatePaymentRequest(true); 
-            }
-        }
-        
-        // --- Form Submission and Payment Request Generation ---
-        if(paymentRequestForm) {
-            paymentRequestForm.addEventListener('submit', function(event) {
-                event.preventDefault();
-                generatePaymentRequest(false); // Not from URL load
-            });
-        }
-
-        function generatePaymentRequest(isLoadingFromURL = false) {
-            const recipientWallet = walletAddressInput.value.trim();
-            const amount = amountInput.value; // Keep as string for precision initially
-            const stablecoinSymbol = stablecoinSelect.value;
-            const description = descriptionInput.value.trim();
-            const message = messageInput.value.trim();
-
-            let isValid = true;
-            if (!isWalletAddressFormatValid(recipientWallet)) {
-                walletAddressError.textContent = 'Invalid or incomplete Solana wallet address.';
-                walletAddressError.style.display = 'block';
-                walletAddressInput.classList.add('input-error');
-                if(isValid && !isLoadingFromURL) walletAddressInput.focus();
-                isValid = false;
-            } else {
-                 walletAddressError.style.display = 'none';
-                 walletAddressInput.classList.remove('input-error');
-            }
-
-            if (!validateAmount()) { // validateAmount also checks format
-                if(isValid && !isLoadingFromURL) amountInput.focus(); 
-                isValid = false;
-            }
-            
-            if (!description) {
-                // For payer view, label might be critical, but don't block if pre-filled
-                if (!isPayerView) {
-                    showModal("Invoice label cannot be empty.", true);
-                    if(isValid && !isLoadingFromURL) descriptionInput.focus();
-                    isValid = false;
-                } else if (!descriptionInput.value && isLoadingFromURL) { // Label missing from URL
-                     showModal("Warning: Payment label is missing from the link.", true);
-                }
-            }
-
-            if (!isValid && !isLoadingFromURL) { // Only show "correct errors" modal if user submitted form
-                showModal("Please correct the errors in the form.", true);
-                return;
-            }
-            
-            // If loading from URL and validation (e.g. bad wallet in URL) fails, still show details but with warning
-            if (!isValid && isLoadingFromURL) {
-                showModal("Warning: Some details in the payment link appear invalid. Review carefully.", true);
-            }
-
-
-            const tokenMintAddress = STABLECOIN_MINTS[stablecoinSymbol];
-            if (!tokenMintAddress) {
-                showModal(`Error: Configuration for ${stablecoinSymbol} is missing.`, true);
-                return;
-            }
-
-            let solanaPayUrl = `solana:${recipientWallet}?amount=${amount}&spl-token=${tokenMintAddress}&label=${encodeURIComponent(description)}`;
-            if (message) {
-                solanaPayUrl += `&message=${encodeURIComponent(message)}`;
-            }
-
-            // Display details
-            document.getElementById('displayWallet').textContent = recipientWallet;
-            document.getElementById('displayAmount').textContent = `${parseFloat(amount).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 6})} ${stablecoinSymbol}`;
-            document.getElementById('displayToken').textContent = `${stablecoinSymbol} (${tokenMintAddress.substring(0,4)}...${tokenMintAddress.substring(tokenMintAddress.length - 4)})`;
-            document.getElementById('displayDescription').textContent = description;
-            
-            const displayMessageContainer = document.getElementById('displayMessageContainer');
-            const displayMessageEl = document.getElementById('displayMessage');
-            if (message) {
-                displayMessageEl.textContent = message;
-                displayMessageContainer.style.display = 'block';
-            } else {
-                displayMessageContainer.style.display = 'none';
-            }
-
-            document.getElementById('solanaPayUrl').value = solanaPayUrl;
-            document.getElementById('walletAddressCopy').value = recipientWallet;
-
-            // QR Code Generation
-            qrCodeErrorEl.style.display = "none"; 
-            if (window.QRious) { 
-                try {
-                    new window.QRious({ 
-                        element: qrCodeCanvas,
-                        value: solanaPayUrl,
-                        size: 192, 
-                        padding: 8,
-                        level: 'H', // High error correction
-                        background: '#FFFFFF', // White background for QR
-                        foreground: 'var(--solana-black)' // Dark foreground
-                    });
-                    qrCodeCanvas.style.display = 'block';
-                } catch (e) {
-                    console.error("QRious generation failed:", e);
-                    qrCodeCanvas.style.display = 'none';
-                    qrCodeErrorEl.textContent = "Failed to generate QR code.";
-                    qrCodeErrorEl.style.display = "block";
-                    if (!isPayerView) showModal("Could not generate QR code. The payment URL is still available.", true);
-                }
-            } else {
-                qrCodeCanvas.style.display = 'none';
-                qrCodeErrorEl.textContent = "QR library not loaded. QR code unavailable.";
-                qrCodeErrorEl.style.display = "block";
-            }
-            
-            // Shareable Link (for this page)
-            const shareableLinkParams = new URLSearchParams({
-                wallet: recipientWallet,
-                amount: amount,
-                token: tokenMintAddress, // Share the mint address
-                label: description // Already URI encoded by browser if needed for query param
-            });
-            if (message) {
-                shareableLinkParams.set('message', message);
-            }
-            const shareLink = `${window.location.origin}${window.location.pathname}?${shareableLinkParams.toString()}`;
-            document.getElementById('shareableLink').value = shareLink;
-
-            // UI Updates for Payer vs. Requestor
-            paymentRequestForm.style.display = 'none';
-            paymentDetailsDiv.style.display = 'block';
-            
-            if (isPayerView) {
-                paymentDetailsTitle.textContent = "Confirm & Pay";
-                // Disable form inputs for payer
-                walletAddressInput.disabled = true;
-                amountInput.disabled = true;
-                stablecoinSelect.disabled = true;
-                descriptionInput.disabled = true;
-                messageInput.disabled = true;
-                connectWalletButton.style.display = 'none'; // Hide requestor's connect button
-
-                payWithWalletButton.style.display = 'block';
-                payWithWalletButton.disabled = false; // Enable pay button
-                payWithWalletButton.textContent = payerPublicKey ? 'Confirm and Pay' : 'Connect Wallet & Pay';
-                payWithWalletButton.onclick = connectAndExecutePayment; 
-                
-                sharingOptionsDiv.style.display = 'none'; // Hide sharing options for payer
-                createNewRequestButton.textContent = 'Back to Create Request'; // Change button text
-            } else { // Requestor view
-                paymentDetailsTitle.textContent = "Payment Request Generated";
-                payWithWalletButton.style.display = 'none';
-                sharingOptionsDiv.style.display = 'block';
-                createNewRequestButton.textContent = 'Create New Request';
-            }
-            if (!isLoadingFromURL) { // Don't scroll if just loading from URL initially
-                paymentDetailsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        }
-
-        // --- Payer: Connect Wallet and Execute Payment ---
-        async function connectAndExecutePayment() {
-            if (!solanaWeb3) {
-                showModal("Solana Web3 library not loaded. Please refresh.", true);
-                return;
-            }
-            if (!solanaConnection) initializeSolanaConnection(); // Ensure connection is there
-
-            if (typeof window.solana === 'undefined' || typeof window.solana.connect === 'undefined') {
-                 showModal("Solana wallet (e.g., Phantom, Solflare) not detected. Please install one to pay directly on this page, or use the QR code/payment URL.", true);
-                 return;
-            }
-
-            try {
-                if (!window.solana.isConnected || !payerPublicKey) {
-                    showModal("Connecting to your wallet...", true);
-                    const resp = await window.solana.connect({ onlyIfTrusted: false }); // Prompt user to connect
-                    payerPublicKey = resp.publicKey;
-                    showModal(`Payer wallet connected: <br><small class="text-text-secondary">${payerPublicKey.toBase58().substring(0,6)}...</small>`, false);
-                    payWithWalletButton.textContent = 'Confirm and Pay';
-                    // Automatically proceed to payment if user confirms connection
-                    await processPaymentTransaction(); 
-                } else {
-                    // Wallet already connected, proceed to payment
-                    await processPaymentTransaction();
-                }
-            } catch (err) {
-                console.error("Payer wallet connection or payment failed:", err);
-                showModal(`Wallet Action Failed: <br><small class="text-text-secondary break-all">${err.message || 'User rejected the request or an unknown error occurred.'}</small>`, true);
-                payerPublicKey = null; // Reset on failure
-                payWithWalletButton.textContent = 'Connect Wallet & Pay'; // Reset button text
-            }
-        }
-
-        async function processPaymentTransaction() {
-            if (!payerPublicKey || !solanaConnection) {
-                showModal("Payer wallet not connected or Solana connection not initialized.", true);
-                return;
-            }
-
-            const recipientAddressString = walletAddressInput.value; // Freelancer's wallet (disabled input)
-            const amountStr = amountInput.value; // Amount (disabled input)
-            const stablecoinSymbol = stablecoinSelect.value; // Token symbol (disabled input)
-            const tokenMintAddressString = STABLECOIN_MINTS[stablecoinSymbol];
-
-            if (!recipientAddressString || !amountStr || !tokenMintAddressString) {
-                showModal("Payment details are incomplete or invalid. Cannot proceed.", true);
-                return;
-            }
-            const amount = parseFloat(amountStr);
-
-            payWithWalletButton.disabled = true;
-            payWithWalletButton.textContent = 'Processing...';
-            showModal("Preparing transaction... Please approve in your wallet.", true);
-
-            try {
-                const recipientPublicKey = new solanaWeb3.PublicKey(recipientAddressString);
-                const tokenMintPublicKey = new solanaWeb3.PublicKey(tokenMintAddressString);
-
-                // Get token decimals (e.g., USDC usually has 6)
-                let decimals = 6; // Default for common stablecoins
-                try {
-                    const tokenMintInfo = await solanaConnection.getParsedAccountInfo(tokenMintPublicKey);
-                    if (tokenMintInfo.value && tokenMintInfo.value.data && tokenMintInfo.value.data.parsed && tokenMintInfo.value.data.parsed.info) {
-                        decimals = tokenMintInfo.value.data.parsed.info.decimals;
-                    } else {
-                         console.warn(`Could not fetch decimals for ${stablecoinSymbol}, defaulting to 6.`);
-                    }
-                } catch (decError) {
-                    console.error(`Error fetching token decimals for ${stablecoinSymbol}:`, decError);
-                    showModal(`Error fetching token info for ${stablecoinSymbol}. Using default precision.`, true);
-                }
-                const actualAmountInSmallestUnit = Math.round(amount * Math.pow(10, decimals));
-
-
-                // Get or create payer's Associated Token Account (ATA)
-                const payerTokenAccountAddress = await solanaWeb3.getAssociatedTokenAddress(
-                    tokenMintPublicKey,
-                    payerPublicKey
-                );
-
-                // Get or create recipient's ATA
-                const recipientTokenAccountAddress = await solanaWeb3.getAssociatedTokenAddress(
-                    tokenMintPublicKey,
-                    recipientPublicKey
-                );
-
-                const transaction = new solanaWeb3.Transaction();
-                const instructions = [];
-
-                // Check if recipient's ATA exists. If not, wallets usually handle this,
-                // but for robustness, one *could* add create ATA instruction.
-                // For simplicity here, we rely on modern wallets to prompt for ATA creation if needed.
-                // If payer's ATA doesn't exist, the transfer will fail unless the wallet also creates it.
-                // Most modern wallets (Phantom, Solflare) handle ATA creation for the payer if they are also the fee payer.
-
-                instructions.push(
-                    solanaWeb3.createTransferInstruction( // Using the new helper from web3.js v1.74.0+
-                        payerTokenAccountAddress,         // from
-                        recipientTokenAccountAddress,     // to
-                        payerPublicKey,                   // owner
-                        actualAmountInSmallestUnit        // amount
-                        // solanaWeb3.TOKEN_PROGRAM_ID is implicitly used by createTransferInstruction
-                    )
-                );
-                
-                transaction.add(...instructions);
-                transaction.feePayer = payerPublicKey;
-                transaction.recentBlockhash = (await solanaConnection.getLatestBlockhash()).blockhash;
-
-                // Sign and send the transaction via the payer's wallet provider
-                const signedTransaction = await window.solana.signTransaction(transaction);
-                const signature = await solanaConnection.sendRawTransaction(signedTransaction.serialize());
-                
-                showModal(`Transaction submitted! <br><small class="text-text-secondary">Sig: ${signature.substring(0,10)}...</small><br>Waiting for confirmation...`, true);
-                
-                // Confirm the transaction
-                const confirmation = await solanaConnection.confirmTransaction({
-                    signature: signature,
-                    blockhash: transaction.recentBlockhash, // from getLatestBlockhash
-                    lastValidBlockHeight: (await solanaConnection.getLatestBlockhash()).lastValidBlockHeight // from getLatestBlockhash
-                }, 'confirmed');
-
-                if (confirmation.value.err) {
-                    throw new Error(`Transaction confirmation failed: ${JSON.stringify(confirmation.value.err)}`);
-                }
-
-                showModal(`Payment Successful! <br><a href="https://solscan.io/tx/${signature}?cluster=${SOLANA_RPC_URL.includes('devnet') ? 'devnet' : 'mainnet-beta'}" target="_blank" class="text-solana-green hover:underline">View on Solscan: ${signature.substring(0,10)}...</a><br><small class="text-text-secondary">You can now close this page.</small>`, true);
-                payWithWalletButton.textContent = 'Payment Sent!';
-                // payWithWalletButton will remain disabled
-            } catch (error) {
-                console.error("Payment processing error:", error);
-                let errorMessage = error.message || 'Unknown error. Check console for details.';
-                if (error.logs) { // Solana specific error logs
-                    errorMessage += `<br>Logs: ${error.logs.join(', ')}`;
-                }
-                showModal(`Payment Failed: <br><small class="text-text-secondary break-all">${errorMessage}</small><br><p class="mt-2 text-xs">You can still use the QR code or copy the Solana Pay URI if available.</p>`, true);
-                payWithWalletButton.disabled = false; // Re-enable button on failure
-                payWithWalletButton.textContent = payerPublicKey ? 'Try Payment Again' : 'Connect Wallet & Pay';
-            }
-        }
-
-
-        // --- Copy to Clipboard ---
-        function copyToClipboard(elementId, tooltipId) { 
-            const inputElement = document.getElementById(elementId);
-            inputElement.select();
-            inputElement.setSelectionRange(0, 99999); 
-
-            try {
-                navigator.clipboard.writeText(inputElement.value).then(() => {
-                    showModal(`Copied to clipboard!`);
-                    const tooltipSpan = document.getElementById(tooltipId); 
-                    if(tooltipSpan) {
-                        const originalText = tooltipSpan.dataset.originalText || tooltipSpan.textContent;
-                        if (!tooltipSpan.dataset.originalText) {
-                             tooltipSpan.dataset.originalText = originalText;
-                        }
-                        tooltipSpan.textContent = 'Copied!';
-                        setTimeout(() => {
-                            tooltipSpan.textContent = originalText;
-                        }, 2000);
-                    }
-                }).catch(err => {
-                    console.error('Clipboard copy failed: ', err);
-                    showModal('Failed to copy. Please copy manually.', true);
-                });
-            } catch (e) { // Fallback for older browsers
-                try { 
-                    document.execCommand('copy');
-                    showModal(`Copied to clipboard (fallback)!`);
-                     const tooltipSpan = document.getElementById(tooltipId); 
-                    if(tooltipSpan) { /* Duplicated for fallback */
-                        const originalText = tooltipSpan.dataset.originalText || tooltipSpan.textContent;
-                         if (!tooltipSpan.dataset.originalText) { tooltipSpan.dataset.originalText = originalText; }
-                        tooltipSpan.textContent = 'Copied!';
-                        setTimeout(() => { tooltipSpan.textContent = originalText; }, 2000);
-                    }
-                } catch (errFallback) {
-                    showModal('Failed to copy. Please copy manually.', true);
-                    console.error('Fallback clipboard copy failed: ', errFallback);
-                }
-            }
-        }
-        
-        // --- Reset Form ---
-        function resetForm() {
-            paymentRequestForm.reset();
-            // Clear any validation errors
-            walletAddressError.style.display = 'none';
-            amountError.style.display = 'none';
-            walletAddressInput.classList.remove('input-error');
-            amountInput.classList.remove('input-error');
-
-            // Re-enable form inputs if they were disabled
-            walletAddressInput.disabled = false;
-            amountInput.disabled = false;
-            stablecoinSelect.disabled = false;
-            descriptionInput.disabled = false;
-            messageInput.disabled = false;
-
-            paymentDetailsDiv.style.display = 'none';
-            paymentRequestForm.style.display = 'block';
-            
-            connectWalletButton.style.display = 'inline-flex'; // Show requestor's connect button
-            payWithWalletButton.style.display = 'none';
-            payWithWalletButton.disabled = false; // Re-enable if it was disabled
-            payWithWalletButton.textContent = 'Connect Wallet & Pay'; // Reset text
-            
-            sharingOptionsDiv.style.display = 'block'; // Ensure sharing options are visible for new request
-            createNewRequestButton.textContent = 'Create New Request';
-
-
-            isPayerView = false;
-            payerPublicKey = null; // Clear payer's public key
-            
-            // Clear URL parameters without reloading the page
-            window.history.pushState({}, document.title, window.location.pathname);
-            walletAddressInput.focus();
-        }
-
-        // --- Window Load ---
-        window.onload = () => {
-            if (!window.QRious) { 
-                 showModal("QR Code library (QRious) failed to load. QR codes may not be available. Check internet/ad-blockers.", true);
-                 if(qrCodeErrorEl) {
-                    qrCodeErrorEl.textContent = "QR library failed to load.";
-                    qrCodeErrorEl.style.display = "block";
-                 }
-            }
-            if (!window.solanaWeb3) {
-                showModal("Solana Web3 library failed to load. Payment functionality will be limited. Please check your internet connection or ad-blockers and refresh.", true);
-            }
-            
-            loadFromURLParams(); // Check if loading as a payer
-
-            // If not in payer view, ensure Solana connection is ready for potential future use (though not strictly needed for request generation)
-            if (!isPayerView) {
-                // initializeSolanaConnection(); // Optional: initialize early for requestor too
-            }
-        };
-
-    </script>
+    // reset
+    function resetForm(){
+      paymentRequestForm.reset();
+      [walletAddressError,amountError].forEach(e=>e.style.display='none');
+      [walletAddressInput,amountInput].forEach(i=>i.classList.remove('input-error'));
+      [walletAddressInput,amountInput,stablecoinSelect,descriptionInput,messageInput]
+        .forEach(i=>i.disabled=false);
+      paymentDetailsDiv.style.display='none';
+      paymentRequestForm.style.display='block';
+      connectWalletButton.style.display='inline-flex';
+      payWithWalletButton.style.display='none';
+      payWithWalletButton.disabled=false;
+      payWithWalletButton.textContent='Connect Wallet & Pay';
+      sharingOptionsDiv.style.display='block';
+      createNewRequestButton.textContent='Create New Request';
+      isPayerView=false; payerPublicKey=null;
+      window.history.pushState({},document.title,window.location.pathname);
+      walletAddressInput.focus();
+    }
+  </script>
 </body>
 </html>
